@@ -1,0 +1,805 @@
+---
+params: 
+  QA_title: "Light Rail and Tram QA note"
+  QA_author: "Rose McNally"
+  QA_date: !r format(lubridate::today(tzone = "GMT"), format = "%d %B %Y")
+  publication_fin_year: ~
+  no_of_vehicles_tbl: ~
+  no_of_stops_tbl: ~
+  route_km_tbl: ~
+  km_operated_tbl: ~
+  total_boardings_tbl: ~
+  cons_boardings_tbl: ~
+  passenger_km_tbl: ~
+  passenger_receipts_tbl: ~
+  cons_eld_dis_tbl: ~
+  cons_young_tbl: ~
+  words_tbl: ~
+  sent_response_differences_tbl: ~
+  email_response_tbl: ~
+title: "`r params$QA_title`"
+author: "`r params$QA_author`"
+date: "`r params$QA_date`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+    theme: flatly
+    fig_caption: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+previous_fin_year <- tramlr::get_previous_fin_year(publication_fin_year)
+
+options(scipen = 999) 
+
+```
+
+***
+
+<br> 
+
+# Section 1: Assets {.tabset}
+
+<br>
+
+`r # ===========================================================================================`
+
+## Number of vehicles
+
+```{r number-of-vehicles-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$no_of_vehicles_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Number of vehicles")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Number of tram stops 
+
+
+```{r number-of-stops-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$no_of_stops_tbl,
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Number of tram stops")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Route km
+
+```{r route-km-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$route_km, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Route km open")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Changes to fleet or network
+
+<br>
+
+*If there have been any changes to your fleet or network affecting these figures please give brief details:*
+
+```{r changes-to-fleet-table, echo = FALSE}
+
+changes_to_fleet_tbl <- dplyr::select(params$words_tbl, name, changes_to_fleet)
+
+knitr::kable(changes_to_fleet_tbl,
+             caption = "",
+             col.names = c("Network",
+                           "Responses"))
+
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+<br>
+
+# Section 2: Scheduled Services
+
+<br>
+
+`r # ===========================================================================================`
+
+## Kilometers operated {.tabset}
+
+### Headline figures
+
+```{r km-operated-headline, include = FALSE}
+
+headline_km_operated <- tramlr::calculate_headline_figures(params$km_operated_tbl)
+
+```
+
+<span style="color: red;">
+`r htmltools::tagList(tramlr::na_message(params$km_operated_tbl)) `
+</span>
+
+#### UK
+
+In `r publication_fin_year` the total km operated by trams in the UK was `r tramlr::inc_or_dec(headline_km_operated[uk_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+#### England
+
+In `r publication_fin_year` the total km operated by trams in England was `r tramlr::inc_or_dec(headline_km_operated[england_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+#### London
+
+In `r publication_fin_year` the total km operated by trams in London was `r tramlr::inc_or_dec(headline_km_operated[london_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+#### England outside London
+
+In `r publication_fin_year` the total km operated by trams in England outside London was `r tramlr::inc_or_dec(headline_km_operated[eol_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+### Scatter plot
+
+```{r km-operated-scatter-plot, fig.align="center", fig.cap="km operated, line indicates no change", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_scatter_plot(params$km_operated_tbl, 
+                          previous_fin_year, 
+                          publication_fin_year)
+
+```
+
+<br>
+
+### Bar chart
+
+```{r km-operated-bar-chart, fig.align="center", fig.cap="km operated", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_bar_chart(params$km_operated_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year)
+
+```
+
+<br>
+
+### Table
+
+```{r km-operated-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$km_operated_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "km operated")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Per train or per tram set basis
+
+<br>
+
+*Have these figures been derived on a per "train" or per "tram set" basis?*
+
+```{r basis-table, echo = FALSE}
+
+basis_tbl <- dplyr::select(params$words_tbl, name, basis)
+
+knitr::kable(basis_tbl,
+             caption = "",
+             col.names = c("Network",
+                           "Responses"))
+
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Total number of boardings {.tabset}
+
+### Headline figures
+
+```{r total-boardings-headline, include = FALSE}
+
+headline_total_boardings <- tramlr::calculate_headline_figures(params$total_boardings_tbl)
+
+```
+
+<span style="color: red;">
+`r htmltools::tagList(tramlr::na_message(params$total_boardings_tbl)) `
+</span>
+
+#### UK
+
+In `r publication_fin_year` the total number of boardings onto trams in the UK was `r tramlr::inc_or_dec(headline_total_boardings[uk_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+#### England
+
+In `r publication_fin_year` the total number of boardings onto trams in England was `r tramlr::inc_or_dec(headline_total_boardings[england_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+#### London
+
+In `r publication_fin_year` the total number of boadings onto trams in London was `r tramlr::inc_or_dec(headline_total_boardings[london_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+#### England outside London
+
+In `r publication_fin_year` the total number of boardings onto trams in England outside London was `r tramlr::inc_or_dec(headline_total_boardings[eol_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+### Scatter plot
+
+```{r total-boardings-scatter-plot, fig.align="center", fig.cap="Total number of boardings, line indicates no change", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_scatter_plot(params$total_boardings_tbl, 
+                          previous_fin_year, 
+                          publication_fin_year)
+
+```
+
+<br>
+
+### Bar chart
+
+```{r total-boardings-bar-chart, fig.align="center", fig.cap="Total number of boardings", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_bar_chart(params$total_boardings_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year)
+
+```
+
+<br>
+
+### Table
+
+```{r total-boardings-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$total_boardings_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Total number of boardings")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Number of concessionary boardings {.tabset}
+
+### Headline figures
+
+```{r concessionary-boardings-headline, include = FALSE}
+
+headline_cons_boardings <- tramlr::calculate_headline_figures(params$cons_boardings_tbl)
+
+```
+
+<span style="color: red;">
+`r htmltools::tagList(tramlr::na_message(params$cons_boardings_tbl)) `
+</span>
+
+#### UK
+
+In `r publication_fin_year` the number of concessionary boardings onto trams in the UK was `r tramlr::inc_or_dec(headline_cons_boardings[uk_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+#### England
+
+In `r publication_fin_year` the number of concessionary boardings onto trams in England was `r tramlr::inc_or_dec(headline_cons_boardings[england_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+#### London
+
+In `r publication_fin_year` the number of concessionary boadings onto trams in London was `r tramlr::inc_or_dec(headline_cons_boardings[london_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+#### England outside London
+
+In `r publication_fin_year` the number of concessionary boardings onto trams in England outside London was `r tramlr::inc_or_dec(headline_cons_boardings[eol_index,], previous_fin_year, commas = TRUE) `
+
+<br>
+
+### Scatter plot
+
+```{r concessionary-boardings-scatter-plot, fig.align="center", fig.cap="Number of concessionary boardings, line indicates no change", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_scatter_plot(params$cons_boardings_tbl, 
+                          previous_fin_year, 
+                          publication_fin_year)
+
+```
+
+<br>
+
+### Bar chart
+
+```{r concessionary-boardings-bar-chart, fig.align="center", fig.cap="Number of concessionary boardings", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_bar_chart(params$cons_boardings_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year)
+
+```
+
+<br>
+
+### Table
+
+```{r concessionary-boardings-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$cons_boardings_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Number of concessionary boardings")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Passenger km {.tabset}
+
+### Headline figures
+
+```{r passenger-km-headline, include = FALSE}
+
+headline_passenger_km <- tramlr::calculate_headline_figures(params$passenger_km_tbl)
+
+```
+
+<span style="color: red;">
+`r htmltools::tagList(tramlr::na_message(params$passenger_km_tbl)) `
+</span>
+
+#### UK
+
+In `r publication_fin_year` the total number of passenger km travelled on trams in the UK was `r tramlr::inc_or_dec(headline_passenger_km[uk_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+#### England
+
+In `r publication_fin_year` the total number of passenger km travelled on trams in England was `r tramlr::inc_or_dec(headline_passenger_km[england_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+#### London
+
+In `r publication_fin_year` the total number of passenger km travelled on trams in London was `r tramlr::inc_or_dec(headline_passenger_km[london_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+#### England outside London
+
+In `r publication_fin_year` the total number of passenger km travelled on trams in England outside London was `r tramlr::inc_or_dec(headline_passenger_km[eol_index,], previous_fin_year, commas = TRUE, km = TRUE) `
+
+<br>
+
+### Scatter plot
+
+```{r passenger-km-scatter-plot, fig.align="center", fig.cap="Passenger km, line indicates no change", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_scatter_plot(params$passenger_km_tbl, 
+                          previous_fin_year, 
+                          publication_fin_year)
+
+```
+
+<br>
+
+### Bar chart
+
+```{r passenger-km-bar-chart, fig.align="center", fig.cap="Passenger km", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_bar_chart(params$passenger_km_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year)
+
+```
+
+<br>
+
+### Table
+
+```{r passenger-km-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$passenger_km_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Passenger km")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Passenger receipts {.tabset}
+
+### Headline figures
+
+```{r passenger-receipts-headline, include = FALSE}
+
+headline_passenger_receipts <- tramlr::calculate_headline_figures(params$passenger_receipts_tbl)
+
+```
+
+<span style="color: red;">
+`r htmltools::tagList(tramlr::na_message(params$passenger_receipts_tbl)) `
+</span>
+
+#### UK
+
+In `r publication_fin_year` the gross passenger receipts for scheduled services on trams in the UK was `r tramlr::inc_or_dec(headline_passenger_receipts[uk_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+#### England
+
+In `r publication_fin_year` the gross passenger receipts for scheduled services on trams in England was `r tramlr::inc_or_dec(headline_passenger_receipts[england_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+#### London
+
+In `r publication_fin_year` the gross passenger receipts for scheduled services on trams in London was `r tramlr::inc_or_dec(headline_passenger_receipts[london_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+#### England outside London
+
+In `r publication_fin_year` the gross passenger receipts for scheduled services on trams in England outside London was `r tramlr::inc_or_dec(headline_passenger_receipts[eol_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+### Scatter plot
+
+```{r passenger-receipts-scatter-plot, fig.align="center", fig.cap="Passenger receipts, line indicates no change", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_scatter_plot(params$passenger_receipts_tbl, 
+                          previous_fin_year, 
+                          publication_fin_year)
+
+```
+
+<br>
+
+### Bar chart
+
+```{r passenger-receipts-bar-chart, fig.align="center", fig.cap="Passenger receipts", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_bar_chart(params$passenger_receipts_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year)
+
+```
+
+<br>
+
+### Table
+
+```{r passenger-receipts-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$passenger_receipts_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Passenger receipts")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Concessionary travel reimbursement for elderly and disabled passengers {.tabset}
+
+### Headline figures
+
+```{r concessionary-eld-dis-headline, include = FALSE}
+
+headline_cons_eld_dis <- tramlr::calculate_headline_figures(params$cons_eld_dis_tbl)
+
+```
+
+<span style="color: red;">
+`r htmltools::tagList(tramlr::na_message(params$cons_eld_dis_tbl)) `
+</span>
+
+#### UK
+
+In `r publication_fin_year` the concessionary travel reimbursement for elderly and disabled passengers on trams in the UK was `r tramlr::inc_or_dec(headline_cons_eld_dis[uk_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+#### England
+
+In `r publication_fin_year` the concessionary travel reimbursement for elderly and disabled passengers on trams in England was `r tramlr::inc_or_dec(headline_cons_eld_dis[england_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+#### London
+
+In `r publication_fin_year` the concessionary travel reimbursement for elderly and disabled passengers on trams in London was `r tramlr::inc_or_dec(headline_cons_eld_dis[london_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+#### England outside London
+
+In `r publication_fin_year` the concessionary travel reimbursement for elderly and disabled passengers on trams in England outside London was `r tramlr::inc_or_dec(headline_cons_eld_dis[eol_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+### Scatter plot
+
+```{r concessionary-eld-dis-scatter-plot, fig.align="center", fig.cap="Concessionary travel reimbursement for elderly and disabled passengers, line indicates no change", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_scatter_plot(params$cons_eld_dis_tbl, 
+                          previous_fin_year, 
+                          publication_fin_year)
+
+```
+
+<br>
+
+### Bar chart
+
+```{r concessionary-eld-dis-bar-chart, fig.align="center", fig.cap="Concessionary travel reimbursement for elderly and disabled passengers", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_bar_chart(params$cons_eld_dis_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year)
+
+```
+
+<br>
+
+### Table
+
+```{r concessionary-eld-dis-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$cons_eld_dis_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Concessionary travel reimbursement for elderly and disabled passengers")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Concessionary travel reimbursement for young passengers {.tabset}
+
+### Headline figures
+
+```{r concessionary-young-headline, include = FALSE}
+
+headline_cons_young <- tramlr::calculate_headline_figures(params$cons_young_tbl)
+
+```
+
+This feild only applies to `r cons_young_operators `.
+
+<span style="color: red;">
+`r htmltools::tagList(tramlr::na_message(params$cons_young_tbl)) `
+</span>
+
+In `r publication_fin_year` the total concessionary travel reimbursement for young passengers on trams in the UK was `r tramlr::inc_or_dec(headline_cons_young[uk_index,], previous_fin_year, commas = TRUE, currency = TRUE) `
+
+<br>
+
+### Scatter plot
+
+```{r concessionary-young-scatter-plot, fig.align="center", fig.cap="Concessionary travel reimbursement for young passengers, line indicates no change", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_scatter_plot(params$cons_young_tbl, 
+                          previous_fin_year, 
+                          publication_fin_year)
+
+```
+
+<br>
+
+### Bar chart
+
+```{r concessionary-young-bar-chart, fig.align="center", fig.cap="Concessionary travel reimbursement for young passengers", echo=FALSE, warning=FALSE}
+
+tramlr::lrt_bar_chart(params$cons_young_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year)
+
+```
+
+<br>
+
+### Table
+
+```{r concessionary-young-table, echo = FALSE}
+
+tramlr::lrt_rmd_table(params$cons_young_tbl, 
+                       previous_fin_year, 
+                       publication_fin_year, 
+                       lrt_caption = "Concessionary travel reimbursement for young passengers")
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Source of figures
+
+<br>
+
+*Please provide brief details of the source of these figures, particularly passenger boardings and passenger kilometres. If there are any factors affecting these figures (e.g. network changes or revisions to methodology) please give details:*
+
+```{r source-of-figures-table, echo = FALSE}
+
+source_of_figures_tbl <- dplyr::select(params$words_tbl, name, source_details)
+
+knitr::kable(source_of_figures_tbl,
+             caption = "",
+             col.names = c("Network",
+                           "Responses"))
+
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+<br>
+
+# Section 3: Other information
+
+<br>
+
+`r # ===========================================================================================`
+
+## Network description
+
+<br>
+
+*The following is a short description of your system which we publish on our website alongside the statistics. Please review, and update/amend as necessary with any developments in `r publication_fin_year`.*
+
+```{r description-table, echo = FALSE}
+
+description_tbl <- dplyr::select(params$words_tbl, name, description)
+
+knitr::kable(description_tbl,
+             caption = "",
+             col.names = c("Network",
+                           "Responses"))
+
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Comments on the survey
+
+<br>
+
+*If you have any comments on survey itself, including estimates of approximately how long it took you to complete the survey, please let us know in the box below:*
+
+```{r comments-table, echo = FALSE}
+
+comments_tbl <- dplyr::select(params$words_tbl, name, comments)
+
+knitr::kable(comments_tbl,
+             caption = "",
+             col.names = c("Network",
+                           "Responses"))
+
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+## Comments in the email response
+
+<br>
+
+```{r email-comments-table, echo = FALSE}
+
+if (is.null(params$email_response_tbl)){
+  
+  email_response <- "There were no comments in the email responses."
+  
+} else{
+
+  knitr::kable(params$email_response_tbl,
+             caption = "",
+             col.names = c("Network",
+                           "Responses"))
+  email_response <- ""
+  
+}
+
+```
+
+`r email_response `
+
+<br>
+
+`r # ===========================================================================================`
+
+## Changes made to the "Last year's figure" fields
+
+<br>
+
+```{r last-year-changes-table, echo = FALSE}
+
+if (is.null(params$sent_response_differences_tbl)){
+  
+  print('No changes were made to the "Last year\'s figure" fields.')
+  
+} else{
+
+  knitr::kable(params$sent_response_differences_tbl,
+             caption = "",
+             col.names = c("Network",
+                           "Field",
+                           "DfT figure",
+                           "Change"))
+  
+}
+
+```
+
+<br>
+
+`r # ===========================================================================================`
+
+
+
+
+
+
+
