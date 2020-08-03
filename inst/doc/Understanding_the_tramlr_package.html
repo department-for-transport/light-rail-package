@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Rose McNally" />
+
+
+<title>Understanding the tramlr package</title>
+
+
+
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Understanding the tramlr package</h1>
+<h4 class="author"><em>Rose McNally</em></h4>
+
+
+
+<div id="contents" class="section level2">
+<h2>Contents</h2>
+<p><a href="#intro">1. Introduction</a><br> <a href="#files-and-functions">2. Files and Functions</a><br> <a href="#functions-work">3. How the functions work</a><br></p>
+<ul>
+<li><a href="#gsf">3.1 Generate survey forms</a><br></li>
+<li><a href="#gqan">3.2 Generate QA note</a><br></li>
+<li><a href="#umtd">3.3 Update minimal tidy dataset</a><br></li>
+<li><a href="#gpt">3.4 Generate publication tables</a><br></li>
+<li><a href="#gpc">3.5 Generate publication charts</a><br></li>
+<li><a href="#gpf">3.6 Generate publication figures</a><br></li>
+</ul>
+<p><a href="#examples">4. Examples</a><br></p>
+<ul>
+<li><a href="#adding">4.1 Adding a new table</a><br></li>
+<li><a href="#table">4.2 Changing a table structure</a><br></li>
+<li><a href="#html">4.3 Changing an html document</a><br></li>
+<li><a href="#graph">4.4 Producing another graph</a><br></li>
+</ul>
+</div>
+<div id="intro" class="section level2">
+<h2>1. Introduction</h2>
+<p>In this vignette, I will try and give an overview of how the tramlr package works so that it should be easy to make changes if necessary. I will also give some examples of how to change the code if you need to.</p>
+<p>It is important that you have an idea of how package source code works so that you can edit it. I would highly recommend reading at least some of Hadley Wickham’s book <a href="http://r-pkgs.had.co.nz/">R Packages</a> to get a feel for it. You can also look at my notes on <em>Writing a RAP Package</em>, from my talk for the DfT’s Coffee and Coding group. You can find them on the Git repo <a href="https://github.com/departmentfortransport/coffee-and-coding/tree/master/All_materials/20200723_Writing_a_RAP_package">here</a>. You should also have read <em>Using the tramlr Package</em>, the other vignette for the package.</p>
+<p>Also, a disclaimer! I apologise for some truly shameful programming at points. I know some of the functions are very long, and sometimes I have written code out even though I have a function which does it for me. I was writing this under time pressure, and so the main aim was to get it working. I have improved certain aspects of it since the publication but can’t quite bring myself to change huge chunks of code. Please feel free to make or suggest changes, I would be really grateful for it.</p>
+</div>
+<div id="files-and-functions" class="section level2">
+<h2>2. Files and Functions</h2>
+<p>There are 20 files in the <code>R/</code> folder. This section shows how the functions are organised within the files. The documentation explains what each function does, just use <code>?</code> to check it out.</p>
+<p>You can refer to this section if you are reading the code and don’t know where a <code>tramlr</code> function comes from - definitely quicker than searching through each file.</p>
+<p><code>00_error_checking</code></p>
+<ul>
+<li><code>check_string</code></li>
+<li><code>check_path</code></li>
+<li><code>check_financial_year</code></li>
+<li><code>check_year_gap</code></li>
+</ul>
+<p><code>01_read_lrt_files</code></p>
+<ul>
+<li><code>read_lrt_file</code></li>
+<li><code>read_lrt_folder</code></li>
+<li><code>read_email_response</code></li>
+<li><code>read_min_tidy_dataset</code></li>
+<li><code>read_gdp_deflator</code></li>
+<li><code>read_population_mye</code></li>
+</ul>
+<p><code>02_general_utilities</code></p>
+<ul>
+<li><code>round_up</code></li>
+<li><code>get_separate_years</code></li>
+</ul>
+<p><code>03_constants</code></p>
+<p><code>04_QA_note_generate</code></p>
+<ul>
+<li><code>generate_lrt_QA_note</code></li>
+</ul>
+<p><code>05_QA_check_last_year_fields</code></p>
+<ul>
+<li><code>last_year_only</code></li>
+<li><code>are_rows_identical</code></li>
+<li><code>last_year_check</code></li>
+</ul>
+<p><code>06_QA_note_tables</code></p>
+<ul>
+<li><code>lrt_make_QA_tables</code></li>
+</ul>
+<p><code>07_QA_note_utilities</code></p>
+<ul>
+<li><code>calculate_headline_figures</code></li>
+<li><code>inc_or_dec</code></li>
+<li><code>get_previous_fin_year</code></li>
+<li><code>na_message</code></li>
+</ul>
+<p><code>08_QA_note_plots</code></p>
+<ul>
+<li><code>lrt_scatter_plot</code></li>
+<li><code>lrt_bar_chart</code></li>
+<li><code>lrt_rmd_table</code></li>
+</ul>
+<p><code>09_update_minimal_tidy_dataset</code></p>
+<ul>
+<li><code>update_minimal_tidy_dataset</code></li>
+</ul>
+<p><code>10_generate_publication_tables</code></p>
+<ul>
+<li><code>generate_publication_tables</code></li>
+</ul>
+<p><code>11_make_publication_table</code></p>
+<ul>
+<li><code>make_publication_table</code></li>
+</ul>
+<p><code>12_publication_table_constants</code></p>
+<p><code>13_publication_table_utilities</code></p>
+<ul>
+<li><code>add_dotted_line</code></li>
+<li><code>set_footer_row_heights</code></li>
+</ul>
+<p><code>14_generate_publication_charts</code></p>
+<ul>
+<li><code>generate_publication_charts</code></li>
+</ul>
+<p><code>15_publication_chart_constants</code></p>
+<p><code>16_generate_publication_figures</code></p>
+<ul>
+<li><code>generate_publication_figures</code></li>
+</ul>
+<p><code>17_generate_survey_forms</code></p>
+<ul>
+<li><code>generate_survey_forms</code></li>
+</ul>
+<p><code>18_make_survey_form</code></p>
+<ul>
+<li><code>make_survey_form</code></li>
+</ul>
+<p><code>19_survey_forms_constants</code></p>
+</div>
+<div id="functions-work" class="section level2">
+<h2>3. How the functions work</h2>
+<p>In this section I will give a brief explanation of how each function works, so you get a good idea of how to change them if you need to. I wanted to cover this to show how certain functions are used within other functions. In the cases where most of the work is done with one main function, I won’t write very much on it, because the comments in my code should give a better guide through the steps.</p>
+<div id="gsf" class="section level3">
+<h3>3.1 Generate survey forms</h3>
+<p>Files <code>17</code>, <code>18</code>, <code>19</code> contain the functions and constants used to generate the new survey forms.</p>
+<p><code>generate_survey_forms</code> first checks the inputs and then checks if a folder for the survey forms exists in the location given, and if not it creates one. It then loads the data from the previous year’s survey forms.</p>
+<p>There are a series of strings saved in file <code>19</code> which need to have dates substitued in, and that’s what the next chunk of code does. There is a survey form template saved in <code>inst/extdata/</code>, and each of these strings are substituted in to the correct cells. The function then calls the <code>make_survey_form</code> function for each operator individually.</p>
+<p>The <code>make_survey_form</code> function writes the operator name into the survey form. It then extracts the last year values from the loaded data and converts them to doubles. It substitues those into the survey form as well, and then saves the survey form in the location given. This is called for each operator, so you end up with ten forms in the folder.</p>
+</div>
+<div id="gqan" class="section level3">
+<h3>3.2 Generate QA note</h3>
+<p>Files <code>01</code> to <code>08</code> are used in the generation of the QA note.</p>
+<p><code>generate_lrt_QA_note</code> is the function called by the user. The inputs are checked and then both the sent out and returned survey forms are loaded. This is done with the <code>read_lrt_folder</code>, which calls the <code>read_lrt_file</code> function over a whole folder. The <code>read_lrt_file</code> function extracts the data from one excel survey form.</p>
+<p>The function then checks if the <code>email_response_path</code> has been entered, and if it has, it loads the email response with the <code>read_email_response</code> function.</p>
+<p>It then calls the <code>last_year_check</code> function. This takes the sent out and returned survey forms, filters them to include the last year fields only, and then compares them to check if any of the fields have been changed by the operators. It then returns a tibble containing anything that has changed. If no changes have been made, it returns <code>NULL</code>.</p>
+<p>Then, the <code>lrt_QA_make_tables</code> function is called, which takes the data loaded from the survey forms and divides them in to separate tables for each feature by operator.</p>
+<p>The titles and file names are set, all of the information that needs to appear in the QA note is added to the <code>lrt_QA_params</code> list, and the QA note is rendered.</p>
+<p>The QA note <code>.rmd</code> file is stored in <code>/inst/rmd/</code>. It takes the data fed into the <code>params</code> argument of the <code>rmarkdown::render</code> function and displays it dynamically. All the items stored in the <code>params</code> list are declared in the <code>YAML</code> header and called throughout the R Markdown document. The <code>calculate_headline_figures</code> function is called to find the UK, England, England outside London and London figures, and the <code>inc_or_dec</code> function prints the correct text to go with the figures. The <code>render</code> function saves the QA note in the location given.</p>
+</div>
+<div id="umtd" class="section level3">
+<h3>3.3 Update minimal tidy dataset</h3>
+<p>This function is called by the user to update the minimal tidy dataset. It is very long and should really be written better :’( but I was in a rush.</p>
+<p>First, it checks the inputs, and reads in all the data. You can have a look at each of the <code>read</code> files in <code>01_read_lrt_files</code>. It then removes the last year values and the worded answers from the survey form data, and converts all the strings of numbers into actual numbers.</p>
+<p>Then, for each tab in the minimal tidy dataset, it adds the new values on to each column. This is very clunky and goes table by table, so it is a very long process. Ideally, it would be a single function called for each table, but because of the way the tables are structured and the way that R references tables and deals with variable names, I couldn’t find a simple way to do this. I would be sooo happy if someone could come up with a cleaner, nicer way of writing this function, so please feel free to change it!</p>
+<p>Finally, the updated dataset is saved in the location given in the arguments.</p>
+</div>
+<div id="gpt" class="section level3">
+<h3>3.4 Generate publication tables</h3>
+<p>The function called by the user is <code>generate_publication_tables</code>. This checks the inputs and creates a directory for the tables to be saved in, if it doesn’t already exist. It then loads the minimal tidy dataset, removes the population table, and then loops over each table calling the <code>make_publication_table</code> function.</p>
+<p>The <code>make_publication_table</code> function uses the <code>table_content</code> constant to determine what features to add to the excel tables. First, the style is set; <code>xltabr</code> uses the excel file saved in <code>inst/styles/</code> to set the styles. It then takes the first word from the minimal tidy data table name, the <code>LRT0XX</code> part, and this is the ‘code’, if you like, which tells the function which features the apply to the table. I won’t go through each step as it’s quite clear what the code is doing as you read through. Once the table is correctly formatted, the function saves the excel file in the location given in the arguments.</p>
+</div>
+<div id="gpc" class="section level3">
+<h3>3.5 Generate publication charts</h3>
+<p>This function doesn’t call on many other <code>tramlr</code> functions, so I will keep this part brief. <code>generate_publication_charts</code> checks each of the inputs, creates the directory to save the <code>jpeg</code> files in, if it doesn’t already exist, and loads the minimal tidy dataset. It then makes each chart and saves them using the <code>ggplot2</code> package. The theme, colours and features are saved as constants in <code>15_publication_chart_constants</code>.</p>
+</div>
+<div id="gpf" class="section level3">
+<h3>3.6 Generate publication figures</h3>
+<p>The <code>generate_publication_figures</code> function is very simple. It checks the inputs, loads the minimal tidy dataset, sets the names and parameters and calls the <code>rmarkdown::render</code> function.</p>
+<p>The R Markdown template is saved in <code>inst/rmd/</code>, and just calls figures from the minimal tidy dataset, in roughly the same order as they appear in the publication.</p>
+<p>The <code>rmarkdown::render</code> function saves the html file in the location given in the arguments.</p>
+</div>
+</div>
+<div id="examples" class="section level2">
+<h2>4. Examples</h2>
+<p>Here, I’m just going to go through some quick examples of how to change the code if you need to.</p>
+<p>I must confess that I have not tried all of these changes, only some, so if you follow these steps and it doesn’t work, it’s much more likely to be my mistake, not yours! If this happens, do some practice runs of the functions and try to debug. If this still doesn’t work, then email me! My DfT email is in the <code>DESCRIPTION</code> file :)</p>
+<div id="adding" class="section level3">
+<h3>4.1 Adding a new table</h3>
+<p>In the 2020 publication, we decided to change <code>LRT0107</code> (average journey length in km) to <code>LRT0107a</code> and <code>LRT0107b</code> (km and miles), so this method has been tried and tested!</p>
+<p>Let’s say that we want to add another <code>LRT03</code> table, showing gross revenue not including concessionary reimbursement (as we collect it in the survey form) in both actual and adjusted prices. The first step is to add this table in the last minimal tidy dataset (so in 2021 you would add it to the 2020 minimal tidy dataset). This can be done easily in excel using a formula.</p>
+<p>Next, we need to add some code in the <code>update_minimal_tidy_dataset</code> function so that the new row of data is added in correctly. I’m not going to show the actual code because the lines are long and it would look really ugly, but all you need to do is copy the <code>if</code> statement structure which updates each table, and extract the values that you want to include from the <code>new_data</code> table. Make sure that if you copy and paste, you remember to change all the names and every row! This can be quite tedious but it can be hard to spot if you have missed one so be aware. If you want to get a better idea of what the code is doing, try out the <code>read_lrt_folder</code> function on the survey forms folder and look at how the table is structured.</p>
+<p>Once you have added the code to that function and tested it to make sure it is working, you just need to add the new table to the <code>table_content</code> constant. The <code>generate_publication_tables</code> function loops over all the minimal tidy dataset tables so you don’t need to add any code there, but the <code>make_publication_table</code> function needs to know how to format the table in excel.</p>
+<p>And that’s it! The annoying part is adding the code to <code>update_minimal_tidy_dataset</code>, but apart from that it’s a very simple process.</p>
+<p>Removing a table is even easier, just set the table to <code>NULL</code> in the <code>generate_publication_table</code> function, like it does with the <code>population</code> table. Then you don’t have to worry about upsetting any other code by removing it. You can also remove it by following the above process backwards, but then you have to find all the places it is reference later on, and this could be quite annoying.</p>
+</div>
+<div id="table" class="section level3">
+<h3>4.2 Changing a table structure</h3>
+<p>For this example, there are two possibilities.</p>
+<p>If you just want to change the structure or content of the table from one thing to another, and the format matches that used in other tables, then all you have to do is change the information in the <code>table_content</code> constant, as described in <em>Using the tramlr package</em>.</p>
+<p>If you want to add a new feature that does not already exist, then you can just add a new item to the relevent <code>table_content</code> list and then add an <code>if</code> loop into the <code>make_publication_table</code> code.</p>
+</div>
+<div id="html" class="section level3">
+<h3>4.3 Changing an html document</h3>
+<p>This is very simple, just edit the <code>rmd</code> template file. For example, if you want to display a new graph in the QA note, all you need to do is write a new function to make the graph, in <code>QA_note_plots</code>, and then call that function in the <code>rmd</code> file.</p>
+<p>You can reference the R Markdown <code>params</code> throughout the file. You always have to start with <code>params</code> as the parent list, and reference objects within it. For example, <code>params$my_variable</code> not just <code>my_variable</code>.</p>
+<p>If you have new data which you want to display in an html file, just add it as another item to the <code>params</code> list before feeding it into the <code>rmarkdown::render</code> function.</p>
+</div>
+<div id="graph" class="section level3">
+<h3>4.4 Producing another graph</h3>
+<p>This, again, is very easy. All you need to do is add some new code to produce the graph in <code>generate_publication_charts</code>, and its ready to go. Remember to add your constants in <code>15_publication_chart_constants</code>.</p>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
