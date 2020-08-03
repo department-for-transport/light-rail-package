@@ -1,0 +1,237 @@
+---
+title: "Understanding the tramlr package"
+author: "Rose McNally"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Understanding the tramlr Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Contents
+
+[1. Introduction](#intro)<br>
+[2. Files and Functions](#files-and-functions)<br>
+[3. How the functions work](#functions-work)<br>
+
+* [3.1 Generate survey forms](#gsf)<br>
+* [3.2 Generate QA note](#gqan)<br>
+* [3.3 Update minimal tidy dataset](#umtd)<br>
+* [3.4 Generate publication tables](#gpt)<br>
+* [3.5 Generate publication charts](#gpc)<br>
+* [3.6 Generate publication figures](#gpf)<br>
+
+[4. Examples](#examples)<br>
+
+* [4.1 Adding a new table](#adding)<br>
+* [4.2 Changing a table structure](#table)<br>
+* [4.3 Changing an html document](#html)<br>
+* [4.4 Producing another graph](#graph)<br>
+
+## 1. Introduction {#intro}
+
+In this vignette, I will try and give an overview of how the tramlr package works so that it should be easy to make changes if necessary. I will also give some examples of how to change the code if you need to.
+
+It is important that you have an idea of how package source code works so that you can edit it. I would highly recommend reading at least some of Hadley Wickham's book [R Packages](http://r-pkgs.had.co.nz/) to get a feel for it. You can also look at my notes on *Writing a RAP Package*, from my talk for the DfT's Coffee and Coding group. You can find them on the Git repo [here](https://github.com/departmentfortransport/coffee-and-coding/tree/master/All_materials/20200723_Writing_a_RAP_package). You should also have read *Using the tramlr Package*, the other vignette for the package.
+
+Also, a disclaimer! I apologise for some truly shameful programming at points. I know some of the functions are very long, and sometimes I have written code out even though I have a function which does it for me. I was writing this under time pressure, and so the main aim was to get it working. I have improved certain aspects of it since the publication but can't quite bring myself to change huge chunks of code. Please feel free to make or suggest changes, I would be really grateful for it. 
+
+## 2. Files and Functions {#files-and-functions}
+
+There are 20 files in the `R/` folder. This section shows how the functions are organised within the files. The documentation explains what each function does, just use `?` to check it out.
+
+You can refer to this section if you are reading the code and don't know where a `tramlr` function comes from - definitely quicker than searching through each file.
+
+`00_error_checking`
+
+* `check_string`
+* `check_path`
+* `check_financial_year`
+* `check_year_gap`
+
+`01_read_lrt_files`
+
+* `read_lrt_file`
+* `read_lrt_folder`
+* `read_email_response`
+* `read_min_tidy_dataset`
+* `read_gdp_deflator`
+* `read_population_mye`
+
+`02_general_utilities`
+
+* `round_up`
+* `get_separate_years`
+
+`03_constants`
+
+`04_QA_note_generate`
+
+* `generate_lrt_QA_note`
+
+`05_QA_check_last_year_fields`
+
+* `last_year_only`
+* `are_rows_identical`
+* `last_year_check`
+
+`06_QA_note_tables`
+
+* `lrt_make_QA_tables`
+
+`07_QA_note_utilities`
+
+* `calculate_headline_figures`
+* `inc_or_dec`
+* `get_previous_fin_year`
+* `na_message`
+
+`08_QA_note_plots`
+
+* `lrt_scatter_plot`
+* `lrt_bar_chart`
+* `lrt_rmd_table`
+
+`09_update_minimal_tidy_dataset`
+
+* `update_minimal_tidy_dataset`
+
+`10_generate_publication_tables`
+
+* `generate_publication_tables`
+
+`11_make_publication_table`
+
+* `make_publication_table`
+
+`12_publication_table_constants`
+
+`13_publication_table_utilities`
+
+* `add_dotted_line`
+* `set_footer_row_heights`
+
+`14_generate_publication_charts`
+
+* `generate_publication_charts`
+
+`15_publication_chart_constants`
+
+`16_generate_publication_figures`
+
+* `generate_publication_figures`
+
+`17_generate_survey_forms`
+
+* `generate_survey_forms`
+
+`18_make_survey_form`
+
+* `make_survey_form`
+
+`19_survey_forms_constants`
+
+## 3. How the functions work {#functions-work}
+
+In this section I will give a brief explanation of how each function works, so you get a good idea of how to change them if you need to. I wanted to cover this to show how certain functions are used within other functions. In the cases where most of the work is done with one main function, I won't write very much on it, because the comments in my code should give a better guide through the steps.
+
+### 3.1 Generate survey forms {#gsf}
+
+Files `17`, `18`, `19` contain the functions and constants used to generate the new survey forms.
+
+`generate_survey_forms` first checks the inputs and then checks if a folder for the survey forms exists in the location given, and if not it creates one. It then loads the data from the previous year's survey forms. 
+
+There are a series of strings saved in file `19` which need to have dates substitued in, and that's what the next chunk of code does. There is a survey form template saved in `inst/extdata/`, and each of these strings are substituted in to the correct cells. The function then calls the `make_survey_form` function for each operator individually.
+
+The `make_survey_form` function writes the operator name into the survey form. It then extracts the last year values from the loaded data and converts them to doubles. It substitues those into the survey form as well, and then saves the survey form in the location given. This is called for each operator, so you end up with ten forms in the folder.
+
+### 3.2 Generate QA note {#gqan}
+
+Files `01` to `08` are used in the generation of the QA note. 
+
+`generate_lrt_QA_note` is the function called by the user. The inputs are checked and then both the sent out and returned survey forms are loaded. This is done with the `read_lrt_folder`, which calls the `read_lrt_file` function over a whole folder. The `read_lrt_file` function extracts the data from one excel survey form.
+
+The function then checks if the `email_response_path` has been entered, and if it has, it loads the email response with the `read_email_response` function. 
+
+It then calls the `last_year_check` function. This takes the sent out and returned survey forms, filters them to include the last year fields only, and then compares them to check if any of the fields have been changed by the operators. It then returns a tibble containing anything that has changed. If no changes have been made, it returns `NULL`.
+
+Then, the `lrt_QA_make_tables` function is called, which takes the data loaded from the survey forms and divides them in to separate tables for each feature by operator.
+
+The titles and file names are set, all of the information that needs to appear in the QA note is added to the `lrt_QA_params` list, and the QA note is rendered.
+
+The QA note `.rmd` file is stored in `/inst/rmd/`. It takes the data fed into the `params` argument of the `rmarkdown::render` function and displays it dynamically. All the items stored in the `params` list are declared in the `YAML` header and called throughout the R Markdown document. The `calculate_headline_figures` function is called to find the UK, England, England outside London and London figures, and the `inc_or_dec` function prints the correct text to go with the figures. The `render` function saves the QA note in the location given.
+
+### 3.3 Update minimal tidy dataset {#umtd}
+
+This function is called by the user to update the minimal tidy dataset. It is very long and should really be written better :'( but I was in a rush.
+
+First, it checks the inputs, and reads in all the data. You can have a look at each of the `read` files in `01_read_lrt_files`. It then removes the last year values and the worded answers from the survey form data, and converts all the strings of numbers into actual numbers.
+
+Then, for each tab in the minimal tidy dataset, it adds the new values on to each column. This is very clunky and goes table by table, so it is a very long process. Ideally, it would be a single function called for each table, but because of the way the tables are structured and the way that R references tables and deals with variable names, I couldn't find a simple way to do this. I would be sooo happy if someone could come up with a cleaner, nicer way of writing this function, so please feel free to change it!
+
+Finally, the updated dataset is saved in the location given in the arguments.
+
+### 3.4 Generate publication tables {#gpt}
+
+The function called by the user is `generate_publication_tables`. This checks the inputs and creates a directory for the tables to be saved in, if it doesn't already exist. It then loads the minimal tidy dataset, removes the population table, and then loops over each table calling the `make_publication_table` function.
+
+The `make_publication_table` function uses the `table_content` constant to determine what features to add to the excel tables. First, the style is set; `xltabr` uses the excel file saved in `inst/styles/` to set the styles. It then takes the first word from the minimal tidy data table name, the `LRT0XX` part, and this is the 'code', if you like, which tells the function which features the apply to the table. I won't go through each step as it's quite clear what the code is doing as you read through. Once the table is correctly formatted, the function saves the excel file in the location given in the arguments.
+
+### 3.5 Generate publication charts {#gpc}
+
+This function doesn't call on many other `tramlr` functions, so I will keep this part brief. `generate_publication_charts` checks each of the inputs, creates the directory to save the `jpeg` files in, if it doesn't already exist, and loads the minimal tidy dataset. It then makes each chart and saves them using the `ggplot2` package. The theme, colours and features are saved as constants in `15_publication_chart_constants`. 
+
+### 3.6 Generate publication figures {#gpf}
+
+The `generate_publication_figures` function is very simple. It checks the inputs, loads the minimal tidy dataset, sets the names and parameters and calls the `rmarkdown::render` function. 
+
+The R Markdown template is saved in `inst/rmd/`, and just calls figures from the minimal tidy dataset, in roughly the same order as they appear in the publication. 
+
+The `rmarkdown::render` function saves the html file in the location given in the arguments.
+
+## 4. Examples {#examples}
+
+Here, I'm just going to go through some quick examples of how to change the code if you need to.
+
+I must confess that I have not tried all of these changes, only some, so if you follow these steps and it doesn't work, it's much more likely to be my mistake, not yours! If this happens, do some practice runs of the functions and try to debug. If this still doesn't work, then email me! My DfT email is in the `DESCRIPTION` file :)
+
+### 4.1 Adding a new table {#adding}
+
+In the 2020 publication, we decided to change `LRT0107` (average journey length in km) to `LRT0107a` and `LRT0107b` (km and miles), so this method has been tried and tested! 
+
+Let's say that we want to add another `LRT03` table, showing gross revenue not including concessionary reimbursement (as we collect it in the survey form) in both actual and adjusted prices. The first step is to add this table in the last minimal tidy dataset (so in 2021 you would add it to the 2020 minimal tidy dataset). This can be done easily in excel using a formula. 
+
+Next, we need to add some code in the `update_minimal_tidy_dataset` function so that the new row of data is added in correctly. I'm not going to show the actual code because the lines are long and it would look really ugly, but all you need to do is copy the `if` statement structure which updates each table, and extract the values that you want to include from the `new_data` table. Make sure that if you copy and paste, you remember to change all the names and every row! This can be quite tedious but it can be hard to spot if you have missed one so be aware. If you want to get a better idea of what the code is doing, try out the `read_lrt_folder` function on the survey forms folder and look at how the table is structured. 
+
+Once you have added the code to that function and tested it to make sure it is working, you just need to add the new table to the `table_content` constant. The `generate_publication_tables` function loops over all the minimal tidy dataset tables so you don't need to add any code there, but the `make_publication_table` function needs to know how to format the table in excel. 
+
+And that's it! The annoying part is adding the code to `update_minimal_tidy_dataset`, but apart from that it's a very simple process.
+
+Removing a table is even easier, just set the table to `NULL` in the `generate_publication_table` function, like it does with the `population` table. Then you don't have to worry about upsetting any other code by removing it. You can also remove it by following the above process backwards, but then you have to find all the places it is reference later on, and this could be quite annoying.
+
+### 4.2 Changing a table structure {#table}
+
+For this example, there are two possibilities.
+
+If you just want to change the structure or content of the table from one thing to another, and the format matches that used in other tables, then all you have to do is change the information in the `table_content` constant, as described in *Using the tramlr package*.
+
+If you want to add a new feature that does not already exist, then you can just add a new item to the relevent `table_content` list and then add an `if` loop into the `make_publication_table` code. 
+
+### 4.3 Changing an html document {#html}
+
+This is very simple, just edit the `rmd` template file. For example, if you want to display a new graph in the QA note, all you need to do is write a new function to make the graph, in `QA_note_plots`, and then call that function in the `rmd` file. 
+
+You can reference the R Markdown `params` throughout the file. You always have to start with `params` as the parent list, and reference objects within it. For example, `params$my_variable` not just `my_variable`.
+
+If you have new data which you want to display in an html file, just add it as another item to the `params` list before feeding it into the `rmarkdown::render` function.
+
+### 4.4 Producing another graph {#graph}
+
+This, again, is very easy. All you need to do is add some new code to produce the graph in `generate_publication_charts`, and its ready to go. Remember to add your constants in `15_publication_chart_constants`.

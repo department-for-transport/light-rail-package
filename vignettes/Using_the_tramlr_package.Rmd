@@ -1,0 +1,359 @@
+---
+title: "Using the tramlr Package"
+author: "Rose McNally"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using the tramlr Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Contents
+
+[1. Introduction](#introduction)<br>
+[2. The Survey Forms](#survey-forms)<br>
+[3. The QA Note](#the-qa-note)<br>
+[4. The Minimal Tidy Dataset](#the-minimal-tidy-dataset)<br>
+[5. The Publication Tables](#the-publication-tables)<br>
+[6. The Publication Charts](#the-publication-charts)<br>
+[7. The Publication Figures](#the-publication-figures)<br>
+[8. Desk Notes](#desk-notes)<br>
+
+## 1. Introduction {#introduction}
+
+The `tramlr` package has been developed to automate some of the steps in the production of the DfT's annual light rail and tram publication. 
+
+This document explains how to use the 5 main functions in the package. If you are not interested in looking at the code behind the functions, and nothing in the publication process has changed since the previous year, then *Using the tramlr Package* is all you need to read.
+
+However, if you want to understand what's going on behind the scenes, or something in the publication needs to be changed, then after reading this guide, you will also need to read *Understanding the tramlr Package*, which explains how each function works, and gives examples of how to change the code for a variety of scenarios.
+
+### What the package does
+
+There are 6 main `tramlr` functions. Using them will allow you to:
+
+* generate the survey forms with last year's data filled in
+* generate a QA note, which can be used in the data validation process
+* create an updated *minimal tidy dataset*, which stores the clean data for use in table production and provides the back series for next year's publication
+* produce the publication tables
+* produce the publication charts
+* calculate all of the key figures used in the publication
+
+### What you need to know
+
+This package is not like the packages you load with `library()`. It is saved on the DfT system, and instead of loading a copy of the package, like you do with `tidyverse` or `utils`, you will be working with the package source code from the developer's side. Most of the time, the only difference will be getting the package up and running, but it also means you **must not** save anything in the `tramlr` folder unless you are deliberately making changes to the package code.
+
+It is also important to not have any files open while running code which uses those files or saves over them. The function won't be able to handle it, and the error messages are normally very hard to understand.
+
+### Getting started
+
+To load the `tramlr` package, open RStudio, click on the top right drop down menu and select `Open Project...`. 
+
+Navigate to <span style="color: grey">G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0002 Publication/Light rail and tram RAP/tramlr</span> and select the `tramlr.Rproj` file.
+
+Now type into the console:
+
+```{r, eval=FALSE}
+devtools::load_all()
+```
+
+This function loads the package from the developers side.
+
+Now the package is ready to use!
+
+## 2. The Survey Forms {#survey-forms}
+
+The first thing you'll need to do is generate the survey forms to send out to the operators. This first function will read the validated survey forms from the previous year, and generate new ones to send out this year.
+
+Let's take a look at the documentation:
+
+```{r, eval=FALSE}
+?generate_survey_forms
+```
+
+The function has four argurments, all required.
+
+The `financial_year` is a string containing the financial year to which the survey refers.
+
+`survey_deadline` is the date by which the operators must return their completed survey forms.
+
+`last_surveys_folder_path` is the path to the folder containing last year's validated survey forms.
+
+`save_surveys_path` is the path to the folder where you would like the forms saved.
+
+You can use this function in a script or in the command line. Here's an example script for the 2020/21 survey:
+
+```{r, eval=FALSE}
+financial_year <- "2020/21"
+survey_deadline <- "4th May 2020"
+last_surveys_folder_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/3. Survey/Validated survey forms"
+save_surveys_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2021/2. Survey set up"
+
+generate_survey_forms(financial_year,
+                      survey_deadline,
+                      last_surveys_folder_path,
+                      save_surveys_path)
+```
+
+Now, in the folder you specified, you will find a new folder called `Survey forms for issue` containing an excel file for each of the ten operators.
+
+## 3. The QA Note {#the-qa-note}
+
+Once all the surveys have been returned by the operators, this first function can be used to generate a QA note. Before starting, make you sure have inspected all of the survey forms for obvious errors or changes that could affect how this function handles the data (for example, the addition of extra rows or columns - the forms should match the structure of the ones sent out).
+
+To take a look at the function documentation, type this into the console:
+
+```{r, eval=FALSE}
+?generate_lrt_QA_note
+```
+
+You can see there are seven arguments, three of which are optional.
+
+You will need to organise the surveys, as described in the documentation, in folders with nothing else in. If multiple survey forms have been returned for a single network, they must be combined into a single form with the full information for one year. Look at the 2020 folders for guidance.
+
+The surveys that the DfT sends out (`survey_sent_path`) are included along with the surveys which are returned (`survey_response_path`) in order to check if operators have changed any of the "last year's figure" fields.
+
+The third argument `save_QA_note_path` tells the function where to save the QA note html file.
+
+`email_response_path` is an optional argument which can be included if the operators have given important information in their email which should be included in the QA note. Take a look at the 2020 file to see how it should be structured. Make sure to spell the names of the operators as they appear in this list:
+
+* Docklands Light Railway
+* London Tramlink
+* Nottingham Express Transit
+* Midland Metro
+* Sheffield Supertram
+* Tyne And Wear Metro - note the capital A 
+* Manchester Metrolink
+* Blackpool Tramway
+* Edinburgh Trams
+* Glasgow Underground - not Subway
+
+The `publication_fin_year` must given in the correct form, otherwise you will get an error.
+
+`QA_author` and `QA_date` are optional, the defaults are "Rose McNally" and the date on which the QA note is generated.
+
+Now, to call the function, all you need to do is enter it into the console, or put it in a script. Here is an example script for the 2020 QA note:
+
+```{r, eval=FALSE}
+survey_sent_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/2. Survey set up/Survey forms issued"
+survey_response_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/3. Survey/Received Survey forms"
+save_QA_note_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/6. Validation"
+publication_fin_year <- "2019/20"
+email_response_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/3. Survey/Survey response emails.xlsx"
+
+generate_lrt_QA_note(survey_sent_path,
+                     survey_response_path,
+                     save_QA_note_path,
+                     publication_fin_year,
+                     email_response_path)
+```
+
+## 4. The Minimal Tidy Dataset {#the-minimal-tidy-dataset}
+
+The minimal tidy dataset can be updated once all the survey returns have been validated.
+
+Let's take a look at the function documentation:
+
+```{r, eval=FALSE}
+?update_minimal_tidy_dataset
+```
+
+This function has six arguments, all required for the function to work.
+
+The first is `min_tidy_dataset_path`, the path to the minimal tidy dataset excel file from last year. You should be able find it in last year's 0001 Data folder.
+
+Next is `survey_folder_path`, the path to the folder of validated survey returns. This folder is structured in the same way as the folders used in the `generate_lrt_QA_note` function. Take a look at the 2020 folder given in the documentation example.
+
+`gdp_deflator_path` is the path to the GDP Deflator excel file. This file is downloaded from the gov.uk website at [this address](https://www.gov.uk/government/collections/gdp-deflators-at-market-prices-and-money-gdp). Check that the file you download matches the file in the 2020 folder (there are a few similar spreadsheets you can download, but the function can only read this one).
+
+`population_mye_path` is the path to the Population Mid-Year Estimates excel file. This is downloaded from the ONS website at [this address](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/populationestimatesforukenglandandwalesscotlandandnorthernireland). Again, check it matches the file in the 2020 example from the documentation.
+
+`save_min_tidy_dataset_path` is the path of the folder in which you would like to save the updated excel file.
+
+Now, you can call the function:
+
+```{r, eval=FALSE}
+min_tidy_dataset_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/7. Minimal Tidy Dataset/2019_minimal_tidy_dataset.xlsx"
+survey_folder_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/3. Survey/Validated survey forms"
+gdp_deflator_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/4. Data Entry and Table Compilation/ONS/GDP_Deflators_Qtrly_National_Accounts_March_2020.xlsx"
+population_mye_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/4. Data Entry and Table Compilation/ONS/ukmidyearestimates20182019ladcodes.xls"
+publication_fin_year <- "2019/20"
+save_min_tidy_dataset <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/7. Minimal Tidy Dataset"
+
+update_minimal_tidy_dataset(min_tidy_dataset_path,
+                            survey_folder_path,
+                            gdp_deflator_path,
+                            population_mye_path,
+                            publication_fin_year,
+                            save_min_tidy_dataset)
+```
+
+**Note**: If you need to change figures from previous years, this is possible. Go in to the minimal tidy dataset excel file from the previous year and change the figure. You must also update any figures which depend on it, for example, the London and England figures. There may be other figures which depend on it; passenger journeys are used to calculate a number of the other figures in the tables. You need to go through and make all of these changes too. You can use excel formulae as normal, and the `2019_minimal_tidy_dataset.xlsx` (in <span style="color: grey">G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/7. Minimal tidy dataset</span>) has all the formulae needed, so just copy that. You must also keep a note of the change, and add it as a footer in the tables (the next chapter will explain how to do this).
+
+## 5. The Publication Tables {#the-publication-tables}
+
+The tables can be generated as soon as the minimal tidy dataset has been updated.
+
+Again, let's look at the documentation:
+
+```{r, eval=FALSE}
+?generate_publication_tables
+```
+
+This function generates the publication tables from the minimal tidy dataset. It has four arguments, all required.
+
+The first is `minimal_tidy_dataset_path`, the path to the minimal tidy dataset excel file with the data from the current year added.
+
+The `save_publication_tables_path` is a path to the folder where you would like the tables to be saved. In the folder you give, the function will check if there is a folder within it called "YEAR Publication Tables", where YEAR is the current year. If the folder exists, the function will save the new tables in there, if it does not exist, the function will create it and then save them in there. Take a look at the documentation example alongside the actual 2020 folder structure if this doesn't make sense.
+
+It is likely, at this stage of the process, that you will need to change at least one thing in the `tramlr` code. The table footers often need adding to, and sometimes you might want to add a dotted line to mark a change in the figures, so I will give an explanation of how to do both of these here. If you want to make any other changes, you will need to read *Understanding the tramlr Package* first.
+
+Let's start by running the code and generating the tables. Here is the 2020 example:
+
+```{r, eval=FALSE}
+minimal_tidy_dataset_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/7. Minimal Tidy Dataset/2020_minimal_tidy_dataset.xlsx"
+save_publication_tables_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0002 Publication/20-05 Light Rail Statistics/Tables"
+publication_fin_year <- "2019/20"
+publication_date <- "25th June 2020"
+
+generate_publication_tables(minimal_tidy_dataset_path,
+                            save_publication_tables_path,
+                            publication_fin_year,
+                            publication_date)
+```
+
+Now you can have a look at all of the tables. Check everything looks okay with the numbers and formatting. You will notice that the a and b tables come out as separate excel files rather than tabs. Unfortunately, formatting sheets as tabs in a file is one of the few things the `openxlsx` package can't do well, so they have to be manually joined together when you are finished editing the tables.
+
+If you are happy with the tables as they are, the tabs can be joined for the a and b tables, and you can convert each one to .ods, ready for publication. When you convert to .ods, you lose the white fill in the cells outside the table. This is fine to leave, or very easy to fix by manually filling them in excel. The other thing you lose is the print formatting. To fix this, all you have to do is go to *Print* and change the scaling setting to *Fit Sheet on One Page*.
+
+### Adding a dotted line or footer
+
+When you opened the `tramlr.Rproj` file, the Files window in RStudio will have opened into the `tramlr` folder. In this window, click on the `/R` folder and then open the file named `12_publication_table_constants.R`. This file contains lots of constants and information which determine how the tables are formatted and what they contain. 
+
+To add a dotted line to a cell in a table, navigate to the `# Structure` section of the file, to the section which is labelled `# Year where dotted line is drawn`. Add a new vector to this section, with the first element being the name of the column (as it appears in the published tables) and the second element being the year under which you want to draw the line. For example, if you wanted to draw one for the DLR between 2019/20 and 2020/21, you would add:
+
+```{r, eval=FALSE}
+dlr_line_year <- c("Docklands Light Railway", "2019/20")
+```
+
+Then scroll down to the `# Individual table contents` section. Go to the tables you want to add the line to, and add it as a new element in the `dotted_line` vector. You can see the first table in the `table_content` list, `LRT0101`, below. Some tables don't have any lines, so they won't have a `dotted_line` vector. If you need to add one, just add it as a new element in the list.
+
+To add a new footer to a table, navigate to the `# Standard content`, `# Footer text` section. Here you will see all the footers listed as strings. Add your new one at the bottom, using a memorable name. For example:
+
+```{r, eval=FALSE}
+foot_example_1 <- "This is an example footer"
+```
+
+Now, scroll down to the table you want to add the footer to in the `table_content` list, and in the `footer_text` vector, add the new footer name as an element. The footers will appear in the table in the same order as they do in the vector.
+
+```{r, eval=FALSE}
+table_content <- list(LRT0101 = list(decimal_points = 1,
+                                     double_header = TRUE,
+                                     London = TRUE,
+                                     dotted_line = c(manchester_line_year_1,
+                                                     midland_line_year,
+                                                     dlr_line_year), # New dotted line added
+                                     inflation = FALSE,
+                                     title_text = c("Table LRT0101",
+                                                    "Passenger journeys on light rail and trams and undergrounds by system: Great Britain - annual from 1983/84"),
+                                     units = "Millions",
+                                     footer_text = c(foot_system,
+                                                     foot_manchester_1,
+                                                     foot_example_1, # New footer added
+                                                     foot_midland_1,
+                                                     foot_midland_2)), # List continues...
+```
+
+If the footer you have added is longer than the table width, so that the text is not fully displayed, you will need to get the function to set the row height. This is very easy, just navigate to the `# Long footers` section in `12_publication_table_constants`, and add your footer name and the number of rows it takes up to the `long_footers` list. The height of the row will be set by multiplying the normal height by the number you enter. For example:
+
+```{r, eval=FALSE}
+# Long footers
+
+long_footers <- list(foot_manchester_2 = 3,
+                     foot_blackpool_2 = 2,
+                     foot_example_1 = 4) 
+```
+
+This footer row will be four times the height of a normal row.
+
+## 6. The Publication Charts {#the-publication-charts}
+
+This next function generates the four charts for the publication. 
+
+Again, let's take a look at the documentation:
+
+```{r, eval=FALSE}
+?generate_publication_charts
+```
+
+There are four arguments, one of which is optional.
+
+`minimal_tidy_dataset_path` is the path to this year's minimal tidy dataset.
+
+`save_publication_charts_path` is the path to the folder in which you would like the save the charts. The function creates a folder called "YEAR Publication Charts" in this location and saves them in there.
+
+`publication_fin_year` is the same as in the other functions.
+
+`year_gaps_chart_1` is an optional argument. Charts 2, 3 and 4 are all over a 10 year period, so they have the same tick spacing along the x-axis every year. Chart 1 is from 1983/84 to the current year, meaning that the tick spacing will change each year. This parameter controls the tick spacing. The default is 6, meaning that there will be a year label every 6 years from 1983/84, up to the penultimate label. The final one will be the current year. You can change this parameter and play around a bit to see what fits best if the years don't divide nicely.
+
+Here is the 2020 example of the function:
+
+```{r, eval=FALSE}
+minimal_tidy_dataset_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/7. Minimal Tidy Dataset/2020_minimal_tidy_dataset.xlsx"
+save_publication_charts_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0002 Publication/20-05 Light Rail Statistics"
+publication_fin_year <- "2019/20"
+
+generate_publication_charts(minimal_tidy_dataset_path,
+                            save_publication_charts_path,
+                            publication_fin_year)
+```
+
+Note that the publication charts have some text labels in the final publication. These are added in Adobe InDesign rather than in R. When you add the charts in to the InDesign document, you can just delete the old chart and edit the text boxes if they need changing.
+
+## 7. The Publication Figures {#the-publication-figures}
+
+The final function takes the data from the minimal tidy dataset and extracts the main figures quoted in the publication. They are presented in an HTML document. This helps avoid having to work them all out in an excel spreadsheet and makes it easy to fill them out in the InDesign document. 
+
+```{r, eval=FALSE}
+?generate_publication_figures
+```
+
+There are three arguments, all required. Here's an example script for the 2020 publication:
+
+```{r, eval=FALSE}
+minimal_tidy_dataset_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/7. Minimal Tidy Dataset/2020_minimal_tidy_dataset.xlsx"
+save_publication_figures_path <- "G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0002 Publication/20-05 Light Rail Statistics"
+publication_fin_year <- "2019/20"
+
+generate_publication_figures(minimal_tidy_dataset_path,
+                             save_publication_figures_path,
+                             publication_fin_year)
+```
+
+## 8. Desk Notes {#desk-notes}
+
+This section adds some more general desk notes to help with the publication. It's also really useful to read the previous year's publication wash-up notes to get an idea of specific issues for the coming year.
+
+The contact check and survey set-up are quite straight forward. Just take a look at the emails sent out last year to the ten operators, and don't forget London Underground!
+
+TfL send the London Underground stats in a different format to the other operators. Their spreadsheet is slightly more complicated so I decided not to automate the reading of it in case they changed the structure. Instead, the figures can be entered into a blank survey form for London Underground, which is then read in by the functions and used to update the minimal tidy dataset. Make sure to add the London Underground title to the cell for the operator name. 
+
+Validating the data requires the QA note. All unexpected changes, and changes over 5% should be queried. Again, just follow the structure of the previous year's emails for this.
+
+Once all the data has been validated and you have the final figures, you can update the minimal tidy dataset and produce the tables, charts and figures. 
+
+Now you are ready to get the tables QA'ed and start on the publication! 
+
+Because the process has been automated, the tables really only need a look over and a few spot-checks for figures since we know the code produces the right results.
+
+The publication requires some data from other sources. Obviously you will have got the ONS data needed for the `update_minimal_tidy_dataset` function. There is also the ORR data for accidents on light rail, found [here](https://dataportal.orr.gov.uk/statistics/health-and-safety/rail-safety/). You need the NTS data analysed for light rail users over the last 8 years. There are also passenger satisfaction figures from Transport Focus and operators that need to be requested.
+
+Once you have all of this, it is easy to update all the sections in the publication and get it QA'ed. You will also need to update the Quality Report with factors that could affect figures - and check with the policy team for any they might know about that weren't reported by the operators.
+
+Once all of this has been finalised and made accessible, you are ready for publication! Woohoo!
