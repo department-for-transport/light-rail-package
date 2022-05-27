@@ -7,36 +7,53 @@
 #                   "km_operated",
 #                   "total_boardings",
 #                   "cons_boardings",
+#                   "cons_boarding_eld_dis",
+#                   "cons_boarding_young",
 #                   "passenger_km",
 #                   "passenger_receipts",
+#                   "LA_receipts",
+#                   "con_overall",
 #                   "cons_eld_dis",
 #                   "cons_young",
-#                   "changes_to_fleet",
+#                   "other_revenue"
+#                   "total_op_costs",
+#                   "fixed_costs"
+#                   "semi_fixed_costs",
+#                   "variable_costs".
 #                   "basis",
-#                   "source_details",
-#                   "description",
+#                   "pass_source_details",
+#                   "costs_source_details",
 #                   "comments")
 
 # Cell positions of values in excel survey form
 
-cells <- list(no_of_vehicles_row = 10,
-              no_of_stops_row = 12,
-              route_km_row = 13,
-              km_operated_row = 21,
-              total_boardings_row = 28,
-              cons_boardings_row = 29,
-              passenger_km_row = 30,
-              passenger_receipts_row = 33,
-              cons_eld_dis_row = 38,
-              cons_young_row = 39,
+cells <- list(no_of_vehicles_row = 13,
+              no_of_stops_row = 15,
+              route_km_row = 16,
+              km_operated_row = 24,
+              total_boardings_row = 31,
+              cons_boardings_row = 32,
+              cons_boarding_eld_dis_row = 33,
+              cons_boarding_young_row = 34,
+              passenger_km_row = 35,
+              passenger_receipts_row = 38,
+              LA_receipts_row = 42,
+              con_overall_row = 46,
+              cons_eld_dis_row = 47,
+              cons_young_row = 48,
+              other_revenue_row = 53,
+              total_op_costs_row = 65,
+              fixed_costs_row = 67,
+              semi_fixed_costs_row = 68,
+              variable_costs_row = 69,
               changes_to_fleet_row = 16,
-              basis_row = 24,
-              source_details_row = 43,
-              description_row = 49,
-              comments_row = 53,
-              last_year_col = 3,
-              this_year_col = 5,
-              text_col = 1)
+              basis_row = 27,
+              pass_source_details_row = 46,
+              costs_source_details_row = 73,
+              comments_row = 79,
+              last_year_col = 5,
+              this_year_col = 7,
+              text_col = 3)
 
 
 # Vector of all tram systems
@@ -45,7 +62,7 @@ all_tram_systems <- c("Blackpool Tramway",
                       "Docklands Light Railway",
                       "Edinburgh Trams",
                       "Glasgow underground",
-                      "London Tramlink",
+                      "London Trams",
                       "Manchester Metrolink",
                       "Midland Metro",
                       "Nottingham Express Transit",
@@ -78,7 +95,7 @@ number_col <- 3
 
 trams_in_england <- c("Blackpool Tramway",
                       "Docklands Light Railway",
-                      "London Tramlink",
+                      "London Trams",
                       "Manchester Metrolink",
                       "Midland Metro",
                       "Nottingham Express Transit",
@@ -90,7 +107,7 @@ trams_in_england <- c("Blackpool Tramway",
 # Used in calculate_headline_figures
 
 trams_in_london <- c("Docklands Light Railway",
-                     "London Tramlink")
+                     "London Trams")
 
 
 # Vector of tram systems in England outside London
@@ -133,7 +150,7 @@ population_mye_tab <- "MYE 5"
 # Used in read_population_mye
 
 area_codes <- list(c("E12000007", "Docklands Light Railway"),
-                   c("E12000007", "London Tramlink"),
+                   c("E12000007", "London Trams"),
                    c("E06000018", "Nottingham Express Transit"),
                    c("E11000005", "Midland Metro"),
                    c("E11000003", "Sheffield Supertram"),
