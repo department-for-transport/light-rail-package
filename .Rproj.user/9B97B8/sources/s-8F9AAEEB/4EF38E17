@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1653643286397.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4EF38E17",
+    "lastKnownWriteTime" : 1653645457,
+    "last_content_update" : 1653645457,
+    "path" : "//virago.internal.dtlr.gov.uk/Data/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2022/00. tramlr packages/light-rail-package/R/01_read_lrt_files.R",
+    "project_path" : "R/01_read_lrt_files.R",
+    "properties" : {
+        "cursorPosition" : "109,56",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
