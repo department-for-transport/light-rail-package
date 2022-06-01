@@ -1,3 +1,5 @@
+library(dplyr)
+
 #' Reads a Light Rail and Tram survey form
 #'
 #' This function reads a single Light Rail and Tram survey form and returns a
@@ -7,8 +9,8 @@
 #' For Windows paths, each backslash must be changed to either a forward slash "/"
 #' or two backslashes "\\\\".
 #'
-#' @return A 2x17 tibble containing all the data entries
-#' in the survey form. This does not include the contact details.
+#' @return A tibble containing all the data entries
+#' in the survey form. This does not include the contact details or (currently) comments.
 #'
 #' @examples
 #' read_lrt_file("G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/5. RAP Data/Received Survey forms/2019-20 DLR.xlsx")
@@ -23,107 +25,44 @@ read_lrt_file <- function(survey_path){
   survey_form = readxl::read_excel(survey_path)
 
 
-  # Extract operator name from survey form
-
-  operator_name <- stringr::str_to_title(survey_form[[1, 1]])
-
-
   # Extract data from survey form
 
-  xl_data <- tibble::tibble(
-    name               = c(operator_name, operator_name),
-    year               = c("this_year", "last_year"),
-    no_of_vehicles     = c(survey_form[[cells$no_of_vehicles_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$no_of_vehicles_row,
-                                   cells$last_year_col]]),
-    no_of_stops        = c(survey_form[[cells$no_of_stops_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$no_of_stops_row,
-                                   cells$last_year_col]]),
-    route_km           = c(survey_form[[cells$route_km_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$route_km_row,
-                                   cells$last_year_col]]),
-    km_operated        = c(survey_form[[cells$km_operated_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$km_operated_row,
-                                   cells$last_year_col]]),
-    total_boardings    = c(survey_form[[cells$total_boardings_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$total_boardings_row,
-                                   cells$last_year_col]]),
-    cons_boardings     = c(survey_form[[cells$cons_boardings_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$cons_boardings_row,
-                                   cells$last_year_col]]),
-    cons_boardings_eld_dis = c(survey_form[[cells$cons_boardings_eld_dis_row,
-                                        cells$this_year_col]],
-                               survey_form[[cells$cons_boardings_eld_dis_row,
-                                            cells$last_year_col]]),
-    cons_boardings_young     = c(survey_form[[cells$cons_boardings_young_row,
-                                        cells$this_year_col]],
-                                 survey_form[[cells$cons_boardings_young_row,
-                                              cells$last_year_col]]),
-    passenger_km       = c(survey_form[[cells$passenger_km_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$passenger_km_row,
-                                   cells$last_year_col]]),
-    passenger_receipts = c(survey_form[[cells$passenger_receipts_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$passenger_receipts_row,
-                                        cells$last_year_col]]),
-    LA_receipts = c(survey_form[[cells$LA_receipts_row,
-                                        cells$this_year_col]],
-                    survey_form[[cells$LA_receipts_row,
-                                 cells$last_year_col]]),
-    cons_overall       = c(survey_form[[cells$cons_overall_row,
-                                        cells$this_year_col]],
-                           survey_form[[cells$cons_overall_row,
-                                        cells$last_year_col]]),
-    cons_eld_dis       = c(survey_form[[cells$cons_eld_dis_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$cons_eld_dis_row,
-                                   cells$last_year_col]]),
-    cons_young         = c(survey_form[[cells$cons_young_row,
-                                   cells$this_year_col]],
-                           survey_form[[cells$cons_young_row,
-                                   cells$last_year_col]]),
-    other_revenue         = c(survey_form[[cells$other_revenue_row,
-                                        cells$this_year_col]],
-                              survey_form[[cells$other_revenue_row,
-                                           cells$last_year_col]]),
-    total_op_costs        = c(survey_form[[cells$total_op_costs_row,
-                                           cells$this_year_col]],
-                              survey_form[[cells$total_op_costs_row,
-                                           cells$last_year_col]]),
-    fixed_costs        = c(survey_form[[cells$fixed_costs_row,
-                                           cells$this_year_col]],
-                           survey_form[[cells$fixed_costs_row,
-                                        cells$last_year_col]]),
-    semi_fixed_costs        = c(survey_form[[cells$semi_fixed_costs_row,
-                                        cells$this_year_col]],
-                                survey_form[[cells$semi_fixed_costs_row,
-                                             cells$last_year_col]]),
-    variable_costs        = c(survey_form[[cells$variable_costs_row,
-                                             cells$this_year_col]],
-                              survey_form[[cells$variable_costs_row,
-                                           cells$last_year_col]]),
+  test <- survey_form %>%
+    rename(Question = `TRAM AND METRO OPERATOR ANNUAL RETURN [STATS100T]`,
+           last_year = `...3`,
+           this_year = `...5`) %>%
+    select(Question, last_year, this_year) %>%
+    mutate(name = survey_form[[1,1]]) %>%
+    filter(grepl("[a-zA-Z]{1}\\d{1}", Question)) %>%
+    mutate(question_text = case_when(
+      Question == "Q1" ~ "no_of_vehicles",
+      Question == "Q2" ~ "no_of_stops",
+      Question == "Q3" ~ "route_km",
+      Question == "Q4" ~ "km_operated",
+      Question == "Q5" ~ "total_boardings",
+      Question == "Q6" ~ "cons_boardings",
+      Question == "Q7" ~ "passenger_km",
+      Question == "Q9" ~ "cons_revenue",
+      Question == "Q10" ~ "other_revenue",
+      Question == "Q11" ~ "total_op_costs",
+      Question == "Q11a" ~ "fixed_costs",
+      Question == "Q8a" ~ "passenger_receipts",
+      Question == "Q6a" ~ "cons_eld_dis",
+      Question == "Q9a" ~ "cons_revenue_eld_dis",
+      Question == "Q6b" ~ "cons_young",
+      Question == "Q8b" ~ "passenger_receipts_la",
+      Question == "Q9b" ~ "cons_revenue_young",
+      Question == "Q11b" ~ "semi_fixed_costs",
+      Question == "Q11c" ~ "variable_costs",
 
-    basis              = c(survey_form[[cells$basis_row,
-                                   cells$text_col]]
-                           ),
-    pass_source_details     = c(survey_form[[cells$pass_source_details_row,
-                                   cells$text_col]]
-                           ),
-    costs_source_details     = c(survey_form[[cells$costs_source_details_row,
-                                             cells$text_col]]
-                                ),
-    comments           = c(survey_form[[cells$comments_row,
-                                   cells$text_col]]
-                           )
-  )
-
+      TRUE ~ "Unsure")) %>%
+    filter(question_text != "Unsure") %>%
+    select(-Question) %>%
+    tidyr::pivot_longer(cols = c("this_year", "last_year"),
+                        names_to = "year",
+                        values_to= "value") %>%
+    tidyr::pivot_wider(names_from = "question_text",
+                       values_from = "value")
 }
 
 
@@ -138,8 +77,8 @@ read_lrt_file <- function(survey_path){
 #' must contain the survey forms and nothing else. The path should not end with slashes. For Windows
 #' paths, each backslash must be changed to either a forward slash "/" or two backslashes "\\\\".
 #'
-#' @return A 2dx17 tibble (where d is the number of survey responses in the folder) containing all
-#' the data entries in each survey form. This does not include the contact details.
+#' @return A 2dx21 tibble (where d is the number of survey responses in the folder) containing all
+#' the data entries in each survey form. This does not include the contact details  or (currently) comments.
 #'
 #' @examples
 #' read_lrt_folder("G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/5. RAP Data/Received Survey forms")
@@ -163,8 +102,6 @@ read_lrt_folder <- function(survey_folder_path){
   return(full_data)
 
 }
-
-
 
 
 #' Reads email comments file
@@ -192,8 +129,6 @@ read_email_response <- function(email_response_path){
   email_response %>% tidyr::drop_na()
 
 }
-
-
 
 #' Reads the Minimal Tidy Dataset excel file
 #'
