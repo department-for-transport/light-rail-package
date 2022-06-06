@@ -45,7 +45,7 @@ generate_lrt_QA_note <- function(survey_sent_path,
                                  save_QA_note_path,
                                  publication_fin_year,
                                  email_response_path = NULL,
-                                 QA_author = "Rose McNally",
+                                 QA_author = "Adam McGuinness",
                                  QA_date = NULL){
 
   # Check all inputs to make sure they are in correct form
