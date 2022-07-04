@@ -20,7 +20,7 @@ last_year_only <- function(survey_tibble){
 
     dplyr::filter(year == "last_year") %>%
 
-    dplyr::select(no_of_vehicles:variable_costs)
+    dplyr::select(name:variable_costs)
 
 }
 

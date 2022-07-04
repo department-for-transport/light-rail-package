@@ -61,7 +61,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
 
   min_tidy_dataset <- tramlr::read_min_tidy_dataset(min_tidy_dataset_path)
 
-  new_data <- tramlr::read_lrt_folder(survey_folder_path)
+  new_data <- data
 
   gdp_deflator <- tramlr::read_gdp_deflator(gdp_deflator_path, publication_fin_year)
 
@@ -71,7 +71,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   # Clean new_data
 
   new_data <- dplyr::filter(new_data, year == "this_year")
-  new_data <- dplyr::select(new_data, name:cons_young)
+  new_data <- dplyr::select(new_data, name:variable_costs)
   new_data <- suppressWarnings(dplyr::mutate_at(new_data, dplyr::vars(number_col:length(new_data)), function(x) as.numeric(x)))
 
 
@@ -541,7 +541,6 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
       message("Population table")
 
     }
-
 
   }
 
