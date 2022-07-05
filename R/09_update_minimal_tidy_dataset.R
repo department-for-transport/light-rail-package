@@ -61,7 +61,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
 
   min_tidy_dataset <- tramlr::read_min_tidy_dataset(min_tidy_dataset_path)
 
-  new_data <- data
+  new_data <- tramlr::read_lrt_folder(survey_folder_path)
 
   gdp_deflator <- tramlr::read_gdp_deflator(gdp_deflator_path, publication_fin_year)
 
