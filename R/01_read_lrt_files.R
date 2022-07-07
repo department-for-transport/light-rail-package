@@ -282,39 +282,12 @@ read_population_mye <- function(population_mye_path, publication_fin_year){
     dplyr::mutate(Financial_year = publication_fin_year,
                   year_mid = mid_year_date) %>%
     #Move to wide form
-    tidyr::spread(area_name, pop)
+    tidyr::spread(area_name, pop) %>%
+    #Create sum columns for England outside London and England total
+    dplyr::mutate("England outside London" = sum(`Blackpool Tramway`, `Manchester Metrolink`, `Midland Metro`,
+                                                 `Nottingham Express Transit`, `Sheffield Supertram`, `Tyne And Wear Metro`, na.rm = TRUE),
+                  "England" = sum(`England outside London`, London))
 
-  for (i in 1:length(area_codes)){
-
-    for (j in 1:dplyr::count(population_mye_full)[[1]]){
-
-      if (grepl(area_codes[[i]][[1]], population_mye_full[[j,1]], fixed = TRUE)){
-
-        name <- area_codes[[i]][[2]]
-
-        pop <- as.integer(population_mye_full[[j,5]])
-
-        population_mye <- tibble::add_column(population_mye, !!name := pop)
-
-      }
-
-    }
-
-  }
-
-
-  # Add England outside London and England columns
-
-  eol <- "England outside London"
-
-  eol_pop <- population_mye[names(population_mye) %in% trams_in_eol]
-
-  eol_pop_sum <- rowSums(eol_pop[1,])
-
-
-  population_mye <- dplyr::mutate(population_mye,
-                                  !!eol := eol_pop_sum,
-                                  England = eol_pop_sum + London)
 
   return(population_mye)
 

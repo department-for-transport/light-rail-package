@@ -132,15 +132,14 @@ population_mye_tab <- "MYE 5"
 # Area codes
 # Used in read_population_mye
 
-area_codes <- c("E12000007", "E12000007", "E06000018", "E11000005",
-                "E11000003", "E11000007", "E11000001", "E06000009",
-                "E12000007")
-
-names(area_codes) <-c("Docklands Light Railway", "London Tramlink",
+area_codes <- tibble(Code = c("E12000007", "E12000007", "E06000018", "E11000005",
+                    "E11000003", "E11000007", "E11000001", "E06000009",
+                    "E12000007"),
+                    area_name = c("Docklands Light Railway", "London Tramlink",
                       "Nottingham Express Transit", "Midland Metro",
                       "Sheffield Supertram", "Tyne And Wear Metro",
                       "Manchester Metrolink", "Blackpool Tramway",
-                      "London")
+                      "London"))
 
 # One million
 # Used in update_minimal_tidy_dataset
