@@ -267,27 +267,22 @@ read_population_mye <- function(population_mye_path, publication_fin_year){
 
   # Get mid year date, for example 2019/20 mid year date is 2018
 
-  mid_year_date <- as.integer(strsplit(publication_fin_year, "/")[[1]])
-
-  mid_year_date <- as.character(mid_year_date[[1]]-1)
-
+  mid_year_date <- as.numeric(gsub("(\\d{4}).*", "\\1", publication_fin_year)) - 1
 
   # Read MYE 5 tab from excel file
 
-  population_mye_full <- readxl::read_excel(population_mye_path, population_mye_tab)
-
-  population_mye_full <- dplyr::select(population_mye_full, 1:5)
-
-
-  # Create tibble with just year_mid and financial year
-
-  fin_year <- "Financial year"
-
-  population_mye <- dplyr::tibble(year_mid = mid_year_date,
-                                  !!fin_year := publication_fin_year)
-
+  population_mye_full <- readxl::read_excel(population_mye_path,
+                                            "MYE 5",
+                                            skip = 4)[1:5]
 
   # For each code in the area_codes constant, find the population and add it to the tibble
+  population_mye <- area_codes %>%
+    dplyr::left_join(population_mye_full) %>%
+    dplyr::select(area_name, pop = "Estimated Population mid-2018") %>%
+    dplyr::mutate(Financial_year = publication_fin_year,
+                  year_mid = mid_year_date) %>%
+    #Move to wide form
+    tidyr::spread(area_name, pop)
 
   for (i in 1:length(area_codes)){
 
