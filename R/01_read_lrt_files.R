@@ -114,19 +114,14 @@ read_lrt_file <- function(survey_path){
 read_lrt_folder <- function(survey_folder_path){
 
 
-  files <- dir(survey_folder_path, pattern = ".xlsx")
+  files <- dir(survey_folder_path,
+               pattern = ".xlsx",
+               full.names = TRUE)
 
-  full_data <- NULL
+  #Loop over all files in directory
+  purrr::map_df(.x = files,
+                .f = read_lrt_file)
 
-  for (i in 1:length(files)){
-
-    single_data <- read_lrt_file(paste(survey_folder_path, files[i], sep = "/"))
-
-    full_data <- dplyr::bind_rows(full_data, single_data)
-
-  }
-
-  return(full_data)
 
 }
 
@@ -154,8 +149,7 @@ read_lrt_folder <- function(survey_folder_path){
 read_email_response <- function(email_response_path){
 
   email_response <- readxl::read_excel(email_response_path)
-
-  email_response %>% tidyr::drop_na()
+  %>% tidyr::drop_na()
 
 }
 
