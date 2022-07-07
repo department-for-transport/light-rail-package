@@ -212,17 +212,22 @@ read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
 
   gdp_deflator <- readxl::read_excel(gdp_deflator_path)[1:3]
 
+  # Rename columns nicely
+  names(gdp_deflator) <- c("FY", "GDP_deflator", "percent_change")
+
 
   # Find row indexes containing first and publication year
 
-  first_row <- grep(first_fin_year_hyphen, gdp_deflator[[1]], fixed = TRUE)
-  last_row <- grep(publication_fin_year_hyphen, gdp_deflator[[1]], fixed = TRUE)
+  first_row <- grep(first_fin_year_hyphen, gdp_deflator$FY, fixed = TRUE)
+  last_row <- grep(publication_fin_year_hyphen, gdp_deflator$FY, fixed = TRUE)
 
+
+  #Clean up FY values to remove footnotes etc
+  gdp_deflator <- gdp_deflator %>%
+    dplyr::mutate(FY = gsub("\\(.*", "", FY))
 
   # Remove extra characters from last_row year and set the gdp deflator value based on the
   # percentage change on previous year
-
-  gdp_deflator[[last_row, 1]] <- publication_fin_year_hyphen
 
   gdp_deflator <- dplyr::mutate_at(gdp_deflator, dplyr::vars(2:3), function(x) as.numeric(x))
 
