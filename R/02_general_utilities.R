@@ -49,36 +49,11 @@ round_up <- function(x, digits = 0){
 get_separate_years <- function(financial_year){
 
 
-  # Split the financial year string at the forward slash
+  #Keep the first 4 characters of the financial year as a numeric
+  year_1 <- as.numeric(gsub("(\\d{4}).*", "\\1", financial_year))
 
-  split_fin_year <- strsplit(financial_year, "/")[[1]]
-
-
-  # Get each year
-
-  year_1 <- split_fin_year[[1]]
-
-  year_2 <- split_fin_year[[2]]
-
-
-  # Convert year 2 to an integer
-
-  year_2 <- as.integer(split_fin_year[[2]])
-
-
-  # Add 2000 to year 2 to get full date
-
-  year_2 <- year_2 + 2000
-
-
-  # Convert back to string
-
-  year_2 <- as.character(year_2)
-
-
-  # Put both strings into a vector
-
-  years <- c(year_1, year_2)
+  #Make a vector of that and the subsequent year
+  years <- as.character(c(year_1, year_1 + 1))
 
   return(years)
 
