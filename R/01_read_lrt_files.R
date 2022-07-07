@@ -213,22 +213,10 @@ read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
   gdp_deflator <- readxl::read_excel(gdp_deflator_path)[1:3]
 
 
-  # For each row, check if first_fin_year or publication_fin_year occur in the first column
-  # If a row matches, save the row index
+  # Find row indexes containing first and publication year
 
-  for (i in 1:dplyr::count(gdp_deflator)[[1]]){
-
-    if (grepl(first_fin_year_hyphen, gdp_deflator[[i,1]], fixed = TRUE)){
-
-      first_row <- i
-
-    } else if (grepl(publication_fin_year_hyphen, gdp_deflator[[i,1]], fixed = TRUE)){
-
-      last_row <- i
-
-    }
-
-  }
+  first_row <- grep(first_fin_year_hyphen, gdp_deflator[[1]], fixed = TRUE)
+  last_row <- grep(publication_fin_year_hyphen, gdp_deflator[[1]], fixed = TRUE)
 
 
   # Remove extra characters from last_row year and set the gdp deflator value based on the
