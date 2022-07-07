@@ -200,20 +200,24 @@ read_min_tidy_dataset <- function(min_tidy_dataset_path){
 
 read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
 
-  # Put publication_fin_year and first_fin_year (in constants.R) into format matching
-  # financial year column in GDP deflator table
-
-  publication_fin_year_hyphen <- gsub("/", "-", publication_fin_year)
-
-  first_fin_year_hyphen <- gsub("/", "-", first_fin_year)
-
-
   # Import GDP Deflator excel sheet and take first 3 columns
 
   gdp_deflator <- readxl::read_excel(gdp_deflator_path)[1:3]
 
   # Rename columns nicely
-  names(gdp_deflator) <- c("FY", "GDP_deflator", "percent_change")
+  names(gdp_deflator) <- c("fin_year", "deflator_value", "percent_change")
+
+  #Clean up FY values to remove footnotes etc and swap hyphens for forward slashes
+  gdp_deflator <- gdp_deflator %>%
+    dplyr::mutate(fin_year = gsub("(\\d{4}\\-\\d{2}).*", "\\1", fin_year),
+                  fin_year = gsub("[-]", "/", fin_year)) %>%
+  # Set the gdp deflator value based on the percentage change on previous year
+    dplyr::mutate_at(.vars = c("deflator_value", "percent_change"), function(x) as.numeric(x)) %>%
+    #Remove NA values
+    dplyr::filter(!is.na(percent_change)) %>%
+    #Calculate GDP deflator from previous row value and percent change
+    dplyr::mutate(deflator_value = dplyr::case_when(!is.na(deflator_value) ~ deflator_value,
+                                                    TRUE ~ lag(deflator_value) * (1 + percent_change/100)))
 
 
   # Find row indexes containing first and publication year
@@ -221,26 +225,9 @@ read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
   first_row <- grep(first_fin_year_hyphen, gdp_deflator$FY, fixed = TRUE)
   last_row <- grep(publication_fin_year_hyphen, gdp_deflator$FY, fixed = TRUE)
 
-
-  #Clean up FY values to remove footnotes etc
-  gdp_deflator <- gdp_deflator %>%
-    dplyr::mutate(FY = gsub("\\(.*", "", FY))
-
-  # Remove extra characters from last_row year and set the gdp deflator value based on the
-  # percentage change on previous year
-
-  gdp_deflator <- dplyr::mutate_at(gdp_deflator, dplyr::vars(2:3), function(x) as.numeric(x))
-
-  gdp_deflator[[last_row, 2]] <- gdp_deflator[[last_row - 1, 2]] * (1 + gdp_deflator[[last_row, 3]]/hundy_p)
-
-
   # Cut table down to years between first and last row inclusive, and remove third column
 
   gdp_deflator <- gdp_deflator[first_row:last_row, 1:2]
-
-  colnames(gdp_deflator)[[1]] <-  "fin_year"
-
-  colnames(gdp_deflator)[[2]] <- "deflator_value"
 
 
   # Change hyphens to forward slashes and add third row for relative deflator
