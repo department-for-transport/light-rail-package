@@ -116,8 +116,4 @@ area_codes <- tibble(Code = c("E12000007", "E12000007", "E06000018", "E11000005"
                       "Manchester Metrolink", "Blackpool Tramway",
                       "London"))
 
-# One million
-# Used in update_minimal_tidy_dataset
-
-million = 1000000
 

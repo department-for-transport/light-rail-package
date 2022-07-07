@@ -72,7 +72,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
     dplyr::filter(year == "this_year") %>%
     dplyr::select(name:cons_young) %>%
       #Mutate everything except name and year
-      dplyr::mutate(across(c("no_of_vehicles":"cons_young"), function(x) as.numeric(x)))
+      dplyr::mutate(across(c("no_of_vehicles":"cons_young"), as.numeric))
 
 
   # Go through each item in min_tidy_dataset list and update the data
