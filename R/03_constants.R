@@ -1,22 +1,5 @@
 # This file contains constants used in the tramlr functions
 
-#
-# column_names <- c("no_of_vehicles",
-#                   "no_of_stops",
-#                   "route_km",
-#                   "km_operated",
-#                   "total_boardings",
-#                   "cons_boardings",
-#                   "passenger_km",
-#                   "passenger_receipts",
-#                   "cons_eld_dis",
-#                   "cons_young",
-#                   "changes_to_fleet",
-#                   "basis",
-#                   "source_details",
-#                   "description",
-#                   "comments")
-
 # Cell positions of values in excel survey form
 
 cells <- list(no_of_vehicles_row = 10,
@@ -64,14 +47,6 @@ cons_young_operators <- c("Manchester Metrolink",
 # One hundred per cent
 
 hundy_p <- 100
-
-
-# Column in which there are numbers
-# Used in lrt_make_QA_tables to convert the correct column to numbers
-# (because column 1 and 2 are "name" and "year")
-
-number_col <- 3
-
 
 # Vector of tram systems in England
 # Used in calculate_headline_figures

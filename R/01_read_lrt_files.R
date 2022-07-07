@@ -148,8 +148,8 @@ read_lrt_folder <- function(survey_folder_path){
 
 read_email_response <- function(email_response_path){
 
-  email_response <- readxl::read_excel(email_response_path)
-  %>% tidyr::drop_na()
+  email_response <- readxl::read_excel(email_response_path) %>%
+    tidyr::drop_na()
 
 }
 

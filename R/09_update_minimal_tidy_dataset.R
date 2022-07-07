@@ -59,20 +59,20 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
 
   # Read files
 
-  min_tidy_dataset <- tramlr::read_min_tidy_dataset(min_tidy_dataset_path)
+  min_tidy_dataset <- read_min_tidy_dataset(min_tidy_dataset_path)
 
-  new_data <- tramlr::read_lrt_folder(survey_folder_path)
+  gdp_deflator <- read_gdp_deflator(gdp_deflator_path, publication_fin_year)
 
-  gdp_deflator <- tramlr::read_gdp_deflator(gdp_deflator_path, publication_fin_year)
-
-  population_mye <- tramlr::read_population_mye(population_mye_path, publication_fin_year)
+  population_mye <- read_population_mye(population_mye_path, publication_fin_year)
 
 
   # Clean new_data
 
-  new_data <- dplyr::filter(new_data, year == "this_year")
-  new_data <- dplyr::select(new_data, name:cons_young)
-  new_data <- suppressWarnings(dplyr::mutate_at(new_data, dplyr::vars(number_col:length(new_data)), function(x) as.numeric(x)))
+  new_data <- read_lrt_folder(survey_folder_path) %>%
+    dplyr::filter(year == "this_year") %>%
+    dplyr::select(name:cons_young) %>%
+      #Mutate everything except name and year
+      dplyr::mutate(across(c("no_of_vehicles":"cons_young"), function(x) as.numeric(x)))
 
 
   # Go through each item in min_tidy_dataset list and update the data
