@@ -210,9 +210,7 @@ read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
 
   # Import GDP Deflator excel sheet and take first 3 columns
 
-  gdp_deflator <- readxl::read_excel(gdp_deflator_path)
-
-  gdp_deflator <- dplyr::select(gdp_deflator, colnames(gdp_deflator)[[1]]:colnames(gdp_deflator)[[3]])
+  gdp_deflator <- readxl::read_excel(gdp_deflator_path)[1:3]
 
 
   # For each row, check if first_fin_year or publication_fin_year occur in the first column
