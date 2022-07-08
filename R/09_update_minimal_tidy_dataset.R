@@ -76,7 +76,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
 
 
   ##Function to make summary columns for London, England, GB, etc
-  summary_cols <- function(data){
+  GB_summary <- function(data){
     data %>%
       ##Add the date
       dplyr::mutate(`Financial year` = publication_fin_year,
@@ -90,11 +90,27 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
 
                     England = sum(London, `England outside of London`),
                     GB = sum(England, `Edinburgh Trams`))
-    }
+  }
+
+  england_summary <- function(data){
+    data %>%
+      ##Add the date
+      dplyr::mutate(`Financial year` = publication_fin_year,
+                    `England outside of London` = sum(`Nottingham Express Transit`,
+                                                      `Midland Metro`,
+                                                      `Sheffield Supertram`,
+                                                      `Tyne and Wear Metro`,
+                                                      `Manchester Metrolink`,
+                                                      `Blackpool Tramway`),
+
+                    England = sum(`Docklands Light Railway`, `London Tramlink`,
+                                  `England outside of London`)) %>%
+      ##Remove Scottish trams
+      dplyr::select(-c(`Edinburgh Trams`, `Glasgow underground`))
+  }
 
   #Instead of a for loop, just pick the table you want
   # LRT0101 Passenger Journeys =========================================================
-
    lrt0101 <- function(min_tidy_dataset, new_data){
     ##Find our data in the list
     item <- grep("LRT0101", names(min_tidy_dataset))
@@ -105,37 +121,37 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
       ##convert total boardings into millions
       dplyr::mutate(total_boardings = total_boardings/1000000) %>%
       tidyr::spread(name, total_boardings) %>%
-      summary_cols()
+      GB_summary()
+
+    min_tidy_dataset[[item]] <- bind_rows(min_tidy_dataset[[item]],
+                                          new)
+   }
+
+  # LRT0102 Concessionary Journeys ================================================================================================================================================================
+
+  lrt0102 <- function(min_tidy_dataset, new_data){
+    ##Find our data in the list
+    item <- grep("LRT0102", names(min_tidy_dataset))
+
+    #Move new data into wide format
+    new <- new_data %>%
+      dplyr::select(name, cons_boardings) %>%
+      ##convert boardings into millions
+      dplyr::mutate(cons_boardings = cons_boardings/1000000) %>%
+      tidyr::spread(name, cons_boardings) %>%
+      england_summary()
 
     min_tidy_dataset[[item]] <- bind_rows(min_tidy_dataset[[item]],
                                           new)
   }
+
+
 
   for (i in 1:length(min_tidy_dataset)){
 
 
 
 
-    # LRT0102 Concessionary Journeys ================================================================================================================================================================
-
-    if (grepl("LRT0102", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "cons_boardings"][[1]]/million,
-                        `London Tramlink` = new_data[new_data$name == "London Tramlink", "cons_boardings"][[1]]/million,
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "cons_boardings"][[1]]/million,
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "cons_boardings"][[1]]/million,
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "cons_boardings"][[1]]/million,
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "cons_boardings"][[1]]/million,
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "cons_boardings"][[1]]/million,
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "cons_boardings"][[1]]/million,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = `Docklands Light Railway` + `London Tramlink` + `England outside of London`)
-
-      message("LRT0102")
-
-    }
 
     # LRT0103 Passenger Kilometers  =================================================================================================================================================================
 
