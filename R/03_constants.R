@@ -97,13 +97,6 @@ eol_index <- 4
 
 first_fin_year <- "1983/84"
 
-
-# Population spreadsheet tab needed for calculations
-# Used in read_population_mye
-
-population_mye_tab <- "MYE 5"
-
-
 # Area codes
 # Used in read_population_mye
 
