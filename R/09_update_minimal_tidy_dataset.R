@@ -110,7 +110,8 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
     dplyr::mutate(across(c("no_of_vehicles":"cons_young"), as.numeric))
 
   # LRT0101 Passenger Journeys =========================================================
-   lrt0101 <- function(min_tidy_dataset, new_data){
+   lrt0101 <- function(min_tidy_dataset = min_tidy_dataset,
+                       new_data = new_data){
     ##Find our data in the list
     item <- grep("LRT0101", names(min_tidy_dataset))
 
@@ -127,7 +128,8 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
    }
 
   # LRT0102 Concessionary Journeys =============================================
-  lrt0102 <- function(min_tidy_dataset, new_data){
+  lrt0102 <- function(min_tidy_dataset = min_tidy_dataset,
+                      new_data = new_data){
     ##Find our data in the list
     item <- grep("LRT0102", names(min_tidy_dataset))
 
@@ -144,7 +146,8 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   }
 
   # LRT0103 Passenger Kilometers  ================================================
-  lrt0103 <- function(min_tidy_dataset, new_data){
+  lrt0103 <- function(min_tidy_dataset = min_tidy_dataset,
+                      new_data = new_data){
     ##Find our data in the list
     item <- grep("LRT0103", names(min_tidy_dataset))
 
@@ -161,7 +164,8 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   }
 
     # LRT0104 Passenger Miles  ==================================================
-  lrt0104 <- function(min_tidy_dataset, new_data){
+  lrt0104 <- function(min_tidy_dataset = min_tidy_dataset,
+                      new_data = new_data){
     ##Find our data in the list
     item <- grep("LRT0104", names(min_tidy_dataset))
 
@@ -180,7 +184,8 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
 
 
     # LRT0105 Kilometers Operated  ==================================================================================================================================================================
-     lrt0105 <- function(min_tidy_dataset, new_data){
+     lrt0105 <- function(min_tidy_dataset = min_tidy_dataset,
+                         new_data = new_data){
     ##Find our data in the list
     item <- grep("LRT0105", names(min_tidy_dataset))
 
@@ -197,29 +202,6 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
     min_tidy_dataset[[item]] <- bind_rows(min_tidy_dataset[[item]],
                                           new)
   }
-    if (grepl("LRT0105", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "km_operated"][[1]]/million,
-                        `London Tramlink` = new_data[new_data$name == "London Tramlink", "km_operated"][[1]]/million,
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "km_operated"][[1]]/million,
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "km_operated"][[1]]/million,
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "km_operated"][[1]]/million,
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "km_operated"][[1]]/million,
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "km_operated"][[1]]/million,
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "km_operated"][[1]]/million,
-                        London = `Docklands Light Railway` + `London Tramlink`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "km_operated"][[1]]/million,
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = new_data[new_data$name == "London Underground", "km_operated"][[1]]/million,
-                        `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "km_operated"][[1]]/(3*million))
-
-      message("LRT0105")
-
-    }
 
     # LRT0106 Miles Operated ========================================================================================================================================================================
     # Glasgow underground is divided by 3 because they count per carriage but there are 3 carriages per tram
@@ -556,8 +538,12 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
     }
 
 
-  }
-
+  # Run all of those functions
+  lrt0101()
+  lrt0102()
+  lrt0103()
+  lrt0104()
+  lrt0105()
   # Save updated minimal tidy dataset in specified folder
 
   # Get year to have in file name, for example 2019/20 file name year is 2020
