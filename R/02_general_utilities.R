@@ -59,9 +59,3 @@ get_separate_years <- function(financial_year){
 
 }
 
-numeric_divide <- function(x){
-
-  #Turn into a numeric and divide by a million
-  as.numeric(x)/ 1000000
-}
-

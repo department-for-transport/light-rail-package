@@ -176,7 +176,6 @@ read_min_tidy_dataset <- function(min_tidy_dataset_path){
                         readxl::excel_sheets() %>%
                         purrr::set_names() %>%
                         purrr::map(readxl::read_excel, path = min_tidy_dataset_path)
-
 }
 
 #' Reads and tidys the GDP Deflator excel file
