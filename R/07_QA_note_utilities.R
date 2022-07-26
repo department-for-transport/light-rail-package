@@ -20,7 +20,7 @@ calculate_headline_figures <- function(lrt_tbl){
                                 last_year = sum(lrt_tbl$last_year, na.rm = TRUE),
                                 this_year = sum(lrt_tbl$this_year, na.rm = TRUE),
                                 diff = this_year - last_year,
-                                percent_change = tramlr::round_up((diff / last_year) * hundy_p, digits = 2))
+                                percent_change = tramlr::round_up((diff / last_year) * 100, digits = 2))
 
   lrt_tbl_en <- dplyr::filter(lrt_tbl, name %in% trams_in_england)
 
@@ -28,7 +28,7 @@ calculate_headline_figures <- function(lrt_tbl){
                                 last_year = sum(lrt_tbl_en$last_year, na.rm = TRUE),
                                 this_year = sum(lrt_tbl_en$this_year, na.rm = TRUE),
                                 diff = this_year - last_year,
-                                percent_change = tramlr::round_up((diff / last_year) * hundy_p, digits = 2))
+                                percent_change = tramlr::round_up((diff / last_year) * 100, digits = 2))
 
   lrt_tbl_london <- dplyr::filter(lrt_tbl, name %in% trams_in_london)
 
@@ -36,7 +36,7 @@ calculate_headline_figures <- function(lrt_tbl){
                                     last_year = sum(lrt_tbl_london$last_year, na.rm = TRUE),
                                     this_year = sum(lrt_tbl_london$this_year, na.rm = TRUE),
                                     diff = this_year - last_year,
-                                    percent_change = tramlr::round_up((diff / last_year) * hundy_p, digits = 2))
+                                    percent_change = tramlr::round_up((diff / last_year) * 100, digits = 2))
 
   lrt_tbl_eol <- dplyr::filter(lrt_tbl, name %in% trams_in_eol)
 
@@ -44,7 +44,7 @@ calculate_headline_figures <- function(lrt_tbl){
                                  last_year = sum(lrt_tbl_eol$last_year, na.rm = TRUE),
                                  this_year = sum(lrt_tbl_eol$this_year, na.rm = TRUE),
                                  diff = this_year - last_year,
-                                 percent_change = tramlr::round_up((diff / last_year) * hundy_p, digits = 2))
+                                 percent_change = tramlr::round_up((diff / last_year) * 100, digits = 2))
 
 
   headlines <- dplyr::bind_rows(headline_uk,

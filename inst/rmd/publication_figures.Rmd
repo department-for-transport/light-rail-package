@@ -36,17 +36,17 @@ passenger_journeys <- utils::tail(dplyr::select(passenger_journeys, London, Engl
 England_passenger_journeys <- passenger_journeys$England[[2]]
 England_last_passenger_journeys <- passenger_journeys$England[[1]]
 England_diff_passenger_journeys <- England_passenger_journeys - England_last_passenger_journeys
-England_change_passenger_journeys <- England_diff_passenger_journeys * hundy_p / England_last_passenger_journeys
+England_change_passenger_journeys <- England_diff_passenger_journeys * 100 / England_last_passenger_journeys
 
 London_passenger_journeys <- passenger_journeys$London[[2]]
 London_last_passenger_journeys <- passenger_journeys$London[[1]]
 London_diff_passenger_journeys <- London_passenger_journeys - London_last_passenger_journeys
-London_change_passenger_journeys <- London_diff_passenger_journeys * hundy_p / London_last_passenger_journeys
+London_change_passenger_journeys <- London_diff_passenger_journeys * 100 / London_last_passenger_journeys
 
 EOL_passenger_journeys <- passenger_journeys$`England outside of London`[[2]]
 EOL_last_passenger_journeys <- passenger_journeys$`England outside of London`[[1]]
 EOL_diff_passenger_journeys <- EOL_passenger_journeys - EOL_last_passenger_journeys
-EOL_change_passenger_journeys <- EOL_diff_passenger_journeys * hundy_p / EOL_last_passenger_journeys
+EOL_change_passenger_journeys <- EOL_diff_passenger_journeys * 100 / EOL_last_passenger_journeys
 
 
 ```
@@ -75,7 +75,7 @@ England_concession_journeys <- utils::tail(concession_journeys$England, 1)
 
 # Percent of all journeys that were concessionary in England
 
-passenger_concession_percent <- England_concession_journeys * hundy_p / England_passenger_journeys
+passenger_concession_percent <- England_concession_journeys * 100 / England_passenger_journeys
 
 # Gross revenue this year in England
 
@@ -101,12 +101,12 @@ England_av_revenue_per_cons <- England_concession_revenue / England_concession_j
 
 England_last_gross_revenue <- utils::tail(gross_revenue$England, 2)[[1]]
 England_diff_gross_revenue <- England_gross_revenue - England_last_gross_revenue
-England_change_gross_revenue <- England_diff_gross_revenue * hundy_p / England_last_gross_revenue
+England_change_gross_revenue <- England_diff_gross_revenue * 100 / England_last_gross_revenue
 
 # Percentage of passenger revenue from DLR this year in England
 
 England_DLR_gross_revenue <- utils::tail(gross_revenue$`Docklands Light Railway`, 1)
-England_DLR_percent_gross_revenue <- England_DLR_gross_revenue * hundy_p / England_gross_revenue
+England_DLR_percent_gross_revenue <- England_DLR_gross_revenue * 100 / England_gross_revenue
 
 ```
 
@@ -217,7 +217,7 @@ England_route_miles <- utils::tail(route_miles$England, 1)
 
 England_last_route_miles <- route_miles$England[[1]]
 England_diff_route_miles <- England_route_miles - England_last_route_miles
-England_change_route_miles <- England_diff_route_miles * hundy_p / England_last_route_miles
+England_change_route_miles <- England_diff_route_miles * 100 / England_last_route_miles
 
 # Number of stops in England this year
 
@@ -227,7 +227,7 @@ England_no_of_stops <- utils::tail(no_of_stops$England, 1)
 
 England_last_no_of_stops <- no_of_stops$England[[1]]
 England_diff_no_of_stops <- England_no_of_stops - England_last_no_of_stops
-England_change_no_of_stops <- England_diff_no_of_stops * hundy_p / England_last_no_of_stops
+England_change_no_of_stops <- England_diff_no_of_stops * 100 / England_last_no_of_stops
 
 # Number of trams in England this year
 
@@ -237,33 +237,33 @@ England_no_of_trams <- utils::tail(no_of_trams$England, 1)
 
 England_last_no_of_trams <- no_of_trams$England[[1]]
 England_diff_no_of_trams <- England_no_of_trams - England_last_no_of_trams
-England_change_no_of_trams <- England_diff_no_of_trams * hundy_p / England_last_no_of_trams
+England_change_no_of_trams <- England_diff_no_of_trams * 100 / England_last_no_of_trams
 
 # Percentage change in passenger journeys by network in England this year
 
 TWM_diff_passenger_journeys <- passenger_journeys_table$`Tyne and Wear Metro`[[2]] - passenger_journeys_table$`Tyne and Wear Metro`[[1]]
-TWM_change_passenger_journeys <- TWM_diff_passenger_journeys * hundy_p / passenger_journeys_table$`Tyne and Wear Metro`[[1]] 
+TWM_change_passenger_journeys <- TWM_diff_passenger_journeys * 100 / passenger_journeys_table$`Tyne and Wear Metro`[[1]] 
 
 Sheffield_diff_passenger_journeys <- passenger_journeys_table$`Sheffield Supertram`[[2]] - passenger_journeys_table$`Sheffield Supertram`[[1]]
-Sheffield_change_passenger_journeys <- Sheffield_diff_passenger_journeys * hundy_p / passenger_journeys_table$`Sheffield Supertram`[[1]] 
+Sheffield_change_passenger_journeys <- Sheffield_diff_passenger_journeys * 100 / passenger_journeys_table$`Sheffield Supertram`[[1]] 
 
 NET_diff_passenger_journeys <- passenger_journeys_table$`Nottingham Express Transit`[[2]] - passenger_journeys_table$`Nottingham Express Transit`[[1]]
-NET_change_passenger_journeys <- NET_diff_passenger_journeys * hundy_p / passenger_journeys_table$`Nottingham Express Transit`[[1]] 
+NET_change_passenger_journeys <- NET_diff_passenger_journeys * 100 / passenger_journeys_table$`Nottingham Express Transit`[[1]] 
 
 DLR_diff_passenger_journeys <- passenger_journeys_table$`Docklands Light Railway`[[2]] - passenger_journeys_table$`Docklands Light Railway`[[1]]
-DLR_change_passenger_journeys <- DLR_diff_passenger_journeys * hundy_p / passenger_journeys_table$`Docklands Light Railway`[[1]] 
+DLR_change_passenger_journeys <- DLR_diff_passenger_journeys * 100 / passenger_journeys_table$`Docklands Light Railway`[[1]] 
 
 Lon_Tram_diff_passenger_journeys <- passenger_journeys_table$`London Tramlink`[[2]] - passenger_journeys_table$`London Tramlink`[[1]]
-Lon_Tram_change_passenger_journeys <- Lon_Tram_diff_passenger_journeys * hundy_p / passenger_journeys_table$`London Tramlink`[[1]] 
+Lon_Tram_change_passenger_journeys <- Lon_Tram_diff_passenger_journeys * 100 / passenger_journeys_table$`London Tramlink`[[1]] 
 
 MML_diff_passenger_journeys <- passenger_journeys_table$`Midland Metro`[[2]] - passenger_journeys_table$`Midland Metro`[[1]]
-MML_change_passenger_journeys <- MML_diff_passenger_journeys * hundy_p / passenger_journeys_table$`Midland Metro`[[1]] 
+MML_change_passenger_journeys <- MML_diff_passenger_journeys * 100 / passenger_journeys_table$`Midland Metro`[[1]] 
 
 Man_Met_diff_passenger_journeys <- passenger_journeys_table$`Manchester Metrolink`[[2]] - passenger_journeys_table$`Manchester Metrolink`[[1]]
-Man_Met_change_passenger_journeys <- Man_Met_diff_passenger_journeys * hundy_p / passenger_journeys_table$`Manchester Metrolink`[[1]] 
+Man_Met_change_passenger_journeys <- Man_Met_diff_passenger_journeys * 100 / passenger_journeys_table$`Manchester Metrolink`[[1]] 
 
 BLP_diff_passenger_journeys <- passenger_journeys_table$`Blackpool Tramway`[[2]] - passenger_journeys_table$`Blackpool Tramway`[[1]]
-BLP_change_passenger_journeys <- BLP_diff_passenger_journeys * hundy_p / passenger_journeys_table$`Blackpool Tramway`[[1]] 
+BLP_change_passenger_journeys <- BLP_diff_passenger_journeys * 100 / passenger_journeys_table$`Blackpool Tramway`[[1]] 
 
 
 ```
@@ -305,14 +305,14 @@ ten_financial_years_ago <- passenger_journeys$`Financial year`[[1]]
 
 ten_years_ago_passenger_journeys <- passenger_journeys$`England`[[1]]
 ten_years_ago_diff_passenger_journeys <- England_passenger_journeys - ten_years_ago_passenger_journeys
-ten_years_ago_change_passenger_journeys <- ten_years_ago_diff_passenger_journeys * hundy_p / ten_years_ago_passenger_journeys
+ten_years_ago_change_passenger_journeys <- ten_years_ago_diff_passenger_journeys * 100 / ten_years_ago_passenger_journeys
 
 # Change in journeys per head from ten years ago
 
 journeys_per_head <- utils::tail(journeys_per_head, ten_year_comparison)
 ten_years_ago_journeys_per_head <- journeys_per_head$England[[1]]
 ten_years_ago_diff_journeys_per_head <- England_journeys_per_head - ten_years_ago_journeys_per_head
-ten_years_ago_change_journeys_per_head <- ten_years_ago_diff_journeys_per_head * hundy_p / ten_years_ago_journeys_per_head
+ten_years_ago_change_journeys_per_head <- ten_years_ago_diff_journeys_per_head * 100 / ten_years_ago_journeys_per_head
 
 # Ten years ago journeys per head for London and England outside of London
 
@@ -341,7 +341,7 @@ England outside of London was `r tramlr::round_up(EOL_ten_years_ago_journeys_per
 
 England_last_concession_journeys <- utils::tail(concession_journeys$England, 2)[[1]]
 England_diff_concession_journeys <- England_concession_journeys - England_last_concession_journeys
-England_change_concession_journeys <- England_diff_concession_journeys * hundy_p / England_last_concession_journeys
+England_change_concession_journeys <- England_diff_concession_journeys * 100 / England_last_concession_journeys
 
 ```
 
@@ -362,21 +362,21 @@ See NTS for other information.
 England_vehicle_miles <- vehicle_miles$England[[2]]
 England_last_vehicle_miles <- vehicle_miles$England[[1]]
 England_diff_vehicle_miles <- England_vehicle_miles - England_last_vehicle_miles
-England_change_vehicle_miles <- England_diff_vehicle_miles * hundy_p / England_last_vehicle_miles
+England_change_vehicle_miles <- England_diff_vehicle_miles * 100 / England_last_vehicle_miles
 
 # London
 
 London_vehicle_miles <- vehicle_miles$London[[2]]
 London_last_vehicle_miles <- vehicle_miles$London[[1]]
 London_diff_vehicle_miles <- London_vehicle_miles - London_last_vehicle_miles
-London_change_vehicle_miles <- London_diff_vehicle_miles * hundy_p / London_last_vehicle_miles
+London_change_vehicle_miles <- London_diff_vehicle_miles * 100 / London_last_vehicle_miles
 
 # England ouside of London
 
 EOL_vehicle_miles <- vehicle_miles$`England outside of London`[[2]]
 EOL_last_vehicle_miles <- vehicle_miles$`England outside of London`[[1]]
 EOL_diff_vehicle_miles <- EOL_vehicle_miles - EOL_last_vehicle_miles
-EOL_change_vehicle_miles <- EOL_diff_vehicle_miles * hundy_p / EOL_last_vehicle_miles
+EOL_change_vehicle_miles <- EOL_diff_vehicle_miles * 100 / EOL_last_vehicle_miles
 
 # Change in vehicle miles over ten years
 
@@ -386,19 +386,19 @@ vehicle_miles <- params$minimal_tidy_dataset[[vehicle_miles_index]]
 vehicle_miles <- utils::tail(vehicle_miles, ten_year_comparison)
 ten_years_ago_vehicle_miles <- vehicle_miles$England[[1]]
 ten_years_ago_diff_vehicle_miles <- England_vehicle_miles - ten_years_ago_vehicle_miles
-ten_years_ago_change_vehicle_miles <- ten_years_ago_diff_vehicle_miles * hundy_p / ten_years_ago_vehicle_miles
+ten_years_ago_change_vehicle_miles <- ten_years_ago_diff_vehicle_miles * 100 / ten_years_ago_vehicle_miles
 
 # London
 
 London_ten_years_ago_vehicle_miles <- vehicle_miles$London[[1]]
 London_ten_years_ago_diff_vehicle_miles <- London_vehicle_miles - London_ten_years_ago_vehicle_miles
-London_ten_years_ago_change_vehicle_miles <- London_ten_years_ago_diff_vehicle_miles * hundy_p / London_ten_years_ago_vehicle_miles
+London_ten_years_ago_change_vehicle_miles <- London_ten_years_ago_diff_vehicle_miles * 100 / London_ten_years_ago_vehicle_miles
 
 # England outside of London
 
 EOL_ten_years_ago_vehicle_miles <- vehicle_miles$`England outside of London`[[1]]
 EOL_ten_years_ago_diff_vehicle_miles <- EOL_vehicle_miles - EOL_ten_years_ago_vehicle_miles
-EOL_ten_years_ago_change_vehicle_miles <- EOL_ten_years_ago_diff_vehicle_miles * hundy_p / EOL_ten_years_ago_vehicle_miles
+EOL_ten_years_ago_change_vehicle_miles <- EOL_ten_years_ago_diff_vehicle_miles * 100 / EOL_ten_years_ago_vehicle_miles
 
 
 
@@ -416,7 +416,7 @@ In England outside of London, vehicle mileage was `r tramlr::round_up(EOL_vehicl
 
 England_last_cons_revenue <- utils::tail(concession_revenue$England, 2)[[1]]
 England_diff_cons_revenue <- England_concession_revenue - England_last_cons_revenue
-England_change_cons_revenue <- England_diff_cons_revenue * hundy_p / England_last_cons_revenue
+England_change_cons_revenue <- England_diff_cons_revenue * 100 / England_last_cons_revenue
 
 ```
 

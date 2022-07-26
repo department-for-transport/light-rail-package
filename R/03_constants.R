@@ -44,10 +44,6 @@ cons_young_operators <- c("Manchester Metrolink",
                           "Tyne And Wear Metro")
 
 
-# One hundred per cent
-
-hundy_p <- 100
-
 # Vector of tram systems in England
 # Used in calculate_headline_figures
 
