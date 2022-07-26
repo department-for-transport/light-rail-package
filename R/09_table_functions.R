@@ -44,7 +44,7 @@ lrt0101 <- function(new = new_data, old = min_tidy_dataset){
     dplyr::select(name, total_boardings) %>%
     ##convert total boardings into millions
     dplyr::mutate(total_boardings = total_boardings/1000000) %>%
-    tidyr::spread(name, total_boardings) %>%
+    tidyr::pivot_wider(names_from = name, values_from = total_boardings) %>%
     GB_summary()
 
  ##Find our data in the list
@@ -212,7 +212,6 @@ lrt0108 <- function(new = new_data, old = min_tidy_dataset) {
 
 
 # LRT0109 Passenger Journeys per head  =========================================
-# London, England outside of London and England depend on LRT0101 being updated already, so don't change their order in the spreadsheet
 lrt0109 <- function(new = new_data, old = min_tidy_dataset) {
 
   new <- new %>%
@@ -238,80 +237,47 @@ lrt0109 <- function(new = new_data, old = min_tidy_dataset) {
 }
 
 # LRT0201 Number of Stops ======================================================
+lrt0201 <- function(new = new_data, old = min_tidy_dataset) {
 
-if (grepl("LRT0201", names(min_tidy_dataset)[[i]], fixed = TRUE)){
+  new <- new %>%
+    dplyr::select(name, no_of_stops) %>%
+    tidyr::pivot_wider(names_from = name, values_from = no_of_stops) %>%
+    GB_summary()
 
-  min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-    tibble::add_row(`Financial year` = publication_fin_year,
-                    `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "no_of_stops"][[1]],
-                    `London Tramlink` = new_data[new_data$name == "London Tramlink", "no_of_stops"][[1]],
-                    `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "no_of_stops"][[1]],
-                    `Midland Metro` = new_data[new_data$name == "Midland Metro", "no_of_stops"][[1]],
-                    `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "no_of_stops"][[1]],
-                    `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "no_of_stops"][[1]],
-                    `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "no_of_stops"][[1]],
-                    `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "no_of_stops"][[1]],
-                    `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                    England = `Docklands Light Railway` + `London Tramlink` + `England outside of London`,
-                    `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "no_of_stops"][[1]],
-                    GB = England + `Edinburgh Trams`,
-                    `London underground` = new_data[new_data$name == "London Underground", "no_of_stops"][[1]],
-                    `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "no_of_stops"][[1]])
-
-  message("LRT0201")
-
+  ##Find our data in the list
+  dplyr::bind_rows(old[[grep("0201", names(old))]],
+                   new)
 }
 
-# LRT0202 Number of Tram Cars ===========================================================================================================================================================================
 
-if (grepl("LRT0202", names(min_tidy_dataset)[[i]], fixed = TRUE)){
+# LRT0202 Number of Tram Cars ==================================================
+lrt0201 <- function(new = new_data, old = min_tidy_dataset) {
 
-  min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-    tibble::add_row(`Financial year` = publication_fin_year,
-                    `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "no_of_vehicles"][[1]],
-                    `London Tramlink` = new_data[new_data$name == "London Tramlink", "no_of_vehicles"][[1]],
-                    `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "no_of_vehicles"][[1]],
-                    `Midland Metro` = new_data[new_data$name == "Midland Metro", "no_of_vehicles"][[1]],
-                    `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "no_of_vehicles"][[1]],
-                    `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "no_of_vehicles"][[1]],
-                    `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "no_of_vehicles"][[1]],
-                    `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "no_of_vehicles"][[1]],
-                    London = `Docklands Light Railway` + `London Tramlink`,
-                    `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                    England = London + `England outside of London`,
-                    `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "no_of_vehicles"][[1]],
-                    GB = England + `Edinburgh Trams`,
-                    `London underground` = new_data[new_data$name == "London Underground", "no_of_vehicles"][[1]],
-                    `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "no_of_vehicles"][[1]])
+  new <- new %>%
+    dplyr::select(name, no_of_vehicles) %>%
+    tidyr::pivot_wider(names_from = name, values_from = no_of_vehicles) %>%
+    GB_summary()
 
-  message("LRT0202")
-
+  ##Find our data in the list
+  dplyr::bind_rows(old[[grep("0202", names(old))]],
+                   new)
 }
 
-# LRT0203 Route Kilometers ===========================================================================================================================================================================
-# Glasgow is divided by two because they count both directions
 
-if (grepl("LRT0203", names(min_tidy_dataset)[[i]], fixed = TRUE)){
+# LRT0203 Route Kilometers =====================================================
+lrt0203 <- function(new = new_data, old = min_tidy_dataset) {
 
-  min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-    tibble::add_row(`Financial year` = publication_fin_year,
-                    `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "route_km"][[1]],
-                    `London Tramlink` = new_data[new_data$name == "London Tramlink", "route_km"][[1]],
-                    `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "route_km"][[1]],
-                    `Midland Metro` = new_data[new_data$name == "Midland Metro", "route_km"][[1]],
-                    `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "route_km"][[1]],
-                    `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "route_km"][[1]],
-                    `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "route_km"][[1]],
-                    `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "route_km"][[1]],
-                    `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                    England = `Docklands Light Railway` + `London Tramlink` + `England outside of London`,
-                    `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "route_km"][[1]],
-                    GB = England + `Edinburgh Trams`,
-                    `London underground` = new_data[new_data$name == "London Underground", "route_km"][[1]],
-                    `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "route_km"][[1]]/2)
+  #Move new data into wide format
+  new <- new %>%
+    dplyr::select(name, route_km) %>%
+    tidyr::spread(name, route_km) %>%
+    # Glasgow underground is divided by 2 because they count both directions
+    dplyr::mutate(`Glasgow Underground` = `Glasgow Underground`/2) %>%
+    GB_summary()
 
-  message("LRT0203")
-
+  ##Find our data in the list
+  dplyr::bind_rows(old[[grep("0203", names(old))]],
+                   new)
 }
 
 # LRT0204 Route Miles ========================================================================================================================================================================
@@ -430,26 +396,13 @@ if (grepl("LRT0302b", names(min_tidy_dataset)[[i]], fixed = TRUE)){
 
 }
 
-# population tab ================================================================================================================================================
+# population tab ===============================================================
+lrt0109 <- function(mye = population_mye) {
 
-if (grepl("population", names(min_tidy_dataset)[[i]], fixed = TRUE)){
+  mye <- mye %>%
+    tidyr::pivot_wider(names_from = name, values_from = pop) %>%
 
-  min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-    tibble::add_row(year_mid = population_mye$year_mid[[1]],
-                    `Financial year` = publication_fin_year,
-                    `Docklands Light Railway` = population_mye$`Docklands Light Railway`[[1]],
-                    `London Tramlink` = population_mye$`London Tramlink`[[1]],
-                    `Nottingham Express Transit` = population_mye$`Nottingham Express Transit`[[1]],
-                    `Midland Metro` = population_mye$`Midland Metro`[[1]],
-                    `Sheffield Supertram` = population_mye$`Sheffield Supertram`[[1]],
-                    `Tyne and Wear Metro` = population_mye$`Tyne And Wear Metro`[[1]],
-                    `Manchester Metrolink` = population_mye$`Manchester Metrolink`[[1]],
-                    `Blackpool Tramway` = population_mye$`Blackpool Tramway`[[1]],
-                    London = population_mye$London[[1]],
-                    `England outside of London` = population_mye$`England outside London`[[1]],
-                    England = population_mye$England[[1]])
-
-  message("Population table")
-
+  ##Find our data in the list
+  dplyr::bind_rows(old[[grep("population", names(old))]],
+                   new)
 }
-
