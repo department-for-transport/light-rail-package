@@ -276,11 +276,11 @@ read_population_mye <- function(population_mye_path){
     #Move to wide form
     tidyr::pivot_wider(names_from = area_name, values_from = pop) %>%
     #Create sum columns for England outside London and England total
-    dplyr::mutate("England outside London" = sum(`Blackpool Tramway`, `Manchester Metrolink`, `Midland Metro`,
+    dplyr::mutate("England outside of London" = sum(`Blackpool Tramway`, `Manchester Metrolink`, `Midland Metro`,
                                                  `Nottingham Express Transit`, `Sheffield Supertram`, `Tyne And Wear Metro`, na.rm = TRUE),
-                  "England" = sum(`England outside London`, London)) %>%
+                  "England" = sum(`England outside of London`, London)) %>%
     #Move back to long form
-    tidyr::pivot_longer(names_to = "area_name", values_to = "pop", cols = dplyr::everything())
+    tidyr::pivot_longer(names_to = "name", values_to = "pop", cols = dplyr::everything())
 
 }
 
