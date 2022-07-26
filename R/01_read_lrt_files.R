@@ -262,33 +262,25 @@ read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
 #'                     "2019/20")
 #'
 
-read_population_mye <- function(population_mye_path, publication_fin_year){
-
-  # Get mid year date, for example 2019/20 mid year date is 2018
-
-  mid_year_date <- as.numeric(gsub("(\\d{4}).*", "\\1", publication_fin_year)) - 1
+read_population_mye <- function(population_mye_path){
 
   # Read MYE 5 tab from excel file
-
-  population_mye_full <- readxl::read_excel(population_mye_path,
-                                            "MYE 5",
-                                            skip = 4)[1:5]
+  mye <- readxl::read_excel(population_mye_path,
+                            "MYE 5",
+                            skip = 4)[1:5]
 
   # For each code in the area_codes constant, find the population and add it to the tibble
-  population_mye <- area_codes %>%
-    dplyr::left_join(population_mye_full) %>%
+  area_codes %>%
+    dplyr::left_join(mye) %>%
     dplyr::select(area_name, pop = "Estimated Population mid-2018") %>%
-    dplyr::mutate(Financial_year = publication_fin_year,
-                  year_mid = mid_year_date) %>%
     #Move to wide form
-    tidyr::spread(area_name, pop) %>%
+    tidyr::pivot_wider(names_from = area_name, values_from = pop) %>%
     #Create sum columns for England outside London and England total
     dplyr::mutate("England outside London" = sum(`Blackpool Tramway`, `Manchester Metrolink`, `Midland Metro`,
                                                  `Nottingham Express Transit`, `Sheffield Supertram`, `Tyne And Wear Metro`, na.rm = TRUE),
-                  "England" = sum(`England outside London`, London))
-
-
-  return(population_mye)
+                  "England" = sum(`England outside London`, London)) %>%
+    #Move back to long form
+    tidyr::pivot_longer(names_to = "area_name", values_to = "pop", cols = dplyr::everything())
 
 }
 
