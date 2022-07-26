@@ -132,7 +132,8 @@ lrt0106 <- function(new = new_data, old = min_tidy_dataset) {
     dplyr::mutate(km_operated =
                     measurements::conv_unit(km_operated, "km", "mi")/1000000) %>%
     tidyr::spread(name, km_operated) %>%
-    # Glasgow underground is divided by 3 because they count per carriage but there are 3 carriages per tram
+    # Glasgow underground is divided by 3 because they count per carriage
+    #but there are 3 carriages per tram
     dplyr::mutate(`Glasgow Underground` = `Glasgow Underground`/3) %>%
     GB_summary()
 
@@ -253,7 +254,7 @@ lrt0201 <- function(new = new_data, old = min_tidy_dataset) {
 
 
 # LRT0202 Number of Tram Cars ==================================================
-lrt0201 <- function(new = new_data, old = min_tidy_dataset) {
+lrt0202 <- function(new = new_data, old = min_tidy_dataset) {
 
   new <- new %>%
     dplyr::select(name, no_of_vehicles) %>%
@@ -288,13 +289,12 @@ lrt0204 <- function(new = new_data, old = min_tidy_dataset) {
   #Move new data into wide format
   new <- new %>%
     dplyr::select(name, route_km) %>%
-    tidyr::spread(name, route_km) %>%
-    # Glasgow underground is divided by 2 because they count both directions
-    dplyr::mutate(`Glasgow Underground` = `Glasgow Underground`/2) %>%
     ##convert km into miles
     dplyr::mutate(route_mi = measurements::conv_unit(route_km,
                                                      "km", "mi")) %>%
     tidyr::spread(name, route_mi) %>%
+    # Glasgow underground is divided by 2 because they count both directions
+    dplyr::mutate(`Glasgow Underground` = `Glasgow Underground`/2) %>%
     GB_summary()
 
   ##Find our data in the list
@@ -324,6 +324,7 @@ lrt0301a <- function(new = new_data, old = min_tidy_dataset) {
 lrt0301b <- function() {
 
   lrt0301a() %>%
+    unique() %>%
     ##Gather previously calculated data
     tidyr::pivot_longer(cols = -`Financial year`) %>%
     dplyr::left_join(gdp_deflator,
@@ -333,7 +334,7 @@ lrt0301b <- function() {
     ##Remove deflator value
     dplyr::select(-relative_deflator) %>%
     #Spread values out again
-    tidyr::pivot_wider()
+    tidyr::pivot_wider(names_from = name, values_from = value)
 
 }
 # LRT0302a Concessionary Revenue at actual prices ==============================
@@ -358,6 +359,7 @@ lrt0302a <- function(new = new_data, old = min_tidy_dataset) {
 lrt0302b <- function() {
 
   lrt0302a() %>%
+    unique() %>%
     ##Gather previously calculated data
     tidyr::pivot_longer(cols = -`Financial year`) %>%
     dplyr::left_join(gdp_deflator,
@@ -372,12 +374,8 @@ lrt0302b <- function() {
 }
 
 # population tab ===============================================================
-lrt0109 <- function(mye = population_mye) {
+population_tab <- function(mye = population_mye) {
 
   mye <- mye %>%
-    tidyr::pivot_wider(names_from = name, values_from = pop) %>%
-
-  ##Find our data in the list
-  dplyr::bind_rows(old[[grep("population", names(old))]],
-                   new)
+    tidyr::pivot_wider(names_from = name, values_from = pop)
 }

@@ -61,7 +61,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   new_data <- read_lrt_folder(survey_folder_path) %>%
     dplyr::filter(year == "this_year") %>%
     dplyr::select(name:cons_young) %>%
-    #Mutate everything except name and year
+    #Mutate everything except name and year to a numeric
     dplyr::mutate(across(c("no_of_vehicles":"cons_young"), as.numeric))
 
   # Run all of the individual table functions to write to their respective locations
@@ -73,6 +73,18 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   min_tidy_dataset[[grep("0106", names(min_tidy_dataset))]] <- lrt0106()
   min_tidy_dataset[[grep("0107a", names(min_tidy_dataset))]] <- lrt0107a()
   min_tidy_dataset[[grep("0107b", names(min_tidy_dataset))]] <- lrt0107b()
+  min_tidy_dataset[[grep("0108", names(min_tidy_dataset))]] <- lrt0108()
+  min_tidy_dataset[[grep("0109", names(min_tidy_dataset))]] <- lrt0109()
+  min_tidy_dataset[[grep("0201", names(min_tidy_dataset))]] <- lrt0201()
+  min_tidy_dataset[[grep("0202", names(min_tidy_dataset))]] <- lrt0202()
+  min_tidy_dataset[[grep("0203", names(min_tidy_dataset))]] <- lrt0203()
+  min_tidy_dataset[[grep("0204", names(min_tidy_dataset))]] <- lrt0204()
+  min_tidy_dataset[[grep("0301a", names(min_tidy_dataset))]] <- lrt0301a()
+  min_tidy_dataset[[grep("0301b", names(min_tidy_dataset))]] <- lrt0301b()
+  min_tidy_dataset[[grep("0302a", names(min_tidy_dataset))]] <- lrt0302a()
+  min_tidy_dataset[[grep("0302b", names(min_tidy_dataset))]] <- lrt0302b()
+  min_tidy_dataset[[grep("population", names(min_tidy_dataset))]] <- population_tab()
+
 
   # Get year to have in file name, for example 2019/20 file name year is 2020
   file_name_year <- as.integer(strsplit(publication_fin_year, "/")[[1]])
@@ -81,8 +93,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   # Save file in directory given
 
   openxlsx::write.xlsx(min_tidy_dataset,
-                       file = paste0(save_min_tidy_dataset_path, "/",
-                                                      file_name_year,
+                       file = paste0(file_name_year,
                                                       "_minimal_tidy_dataset.xlsx"))
 
 }
