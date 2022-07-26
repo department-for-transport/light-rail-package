@@ -4,7 +4,8 @@ GB_summary <- function(data){
   data %>%
     ##Add the date
     dplyr::mutate(`Financial year` = publication_fin_year,
-                  London = sum(`Docklands Light Railway`, `London Tramlink`, na.rm = TRUE),
+                  London = sum(`Docklands Light Railway`, `London Tramlink`,
+                               na.rm = TRUE),
                   `England outside of London` = sum(`Nottingham Express Transit`,
                                                     `Midland Metro`,
                                                     `Sheffield Supertram`,
@@ -101,7 +102,7 @@ lrt0104 <- function(new = new_data, old = min_tidy_dataset) {
 }
 
 
-# LRT0105 Kilometers Operated  ==================================================================================================================================================================
+# LRT0105 Kilometers Operated  =================================================
 lrt0105 <- function(new = new_data, old = min_tidy_dataset) {
 
   #Move new data into wide format
@@ -110,7 +111,8 @@ lrt0105 <- function(new = new_data, old = min_tidy_dataset) {
     ##convert passenger km into millions
     dplyr::mutate(km_operated = km_operated/1000000) %>%
     tidyr::spread(name, km_operated) %>%
-    # Glasgow underground is divided by 3 because they count per carriage but there are 3 carriages per tram
+    # Glasgow underground is divided by 3 because they count per carriage
+    #but there are 3 carriages per tram
     dplyr::mutate(`Glasgow Underground` = `Glasgow Underground`/3) %>%
     GB_summary()
 
@@ -280,119 +282,92 @@ lrt0203 <- function(new = new_data, old = min_tidy_dataset) {
                    new)
 }
 
-# LRT0204 Route Miles ========================================================================================================================================================================
-# Glasgow is divided by two because they count both directions
+# LRT0204 Route Miles ==========================================================
+lrt0204 <- function(new = new_data, old = min_tidy_dataset) {
 
-if (grepl("LRT0204", names(min_tidy_dataset)[[i]], fixed = TRUE)){
+  #Move new data into wide format
+  new <- new %>%
+    dplyr::select(name, route_km) %>%
+    tidyr::spread(name, route_km) %>%
+    # Glasgow underground is divided by 2 because they count both directions
+    dplyr::mutate(`Glasgow Underground` = `Glasgow Underground`/2) %>%
+    ##convert km into miles
+    dplyr::mutate(route_mi = measurements::conv_unit(route_km,
+                                                     "km", "mi")) %>%
+    tidyr::spread(name, route_mi) %>%
+    GB_summary()
 
-  min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-    tibble::add_row(`Financial year` = publication_fin_year,
-                    `Docklands Light Railway` = measurements::conv_unit(new_data[new_data$name == "Docklands Light Railway", "route_km"][[1]], "km", "mi"),
-                    `London Tramlink` = measurements::conv_unit(new_data[new_data$name == "London Tramlink", "route_km"][[1]], "km", "mi"),
-                    `Nottingham Express Transit` = measurements::conv_unit(new_data[new_data$name == "Nottingham Express Transit", "route_km"][[1]], "km", "mi"),
-                    `Midland Metro` = measurements::conv_unit(new_data[new_data$name == "Midland Metro", "route_km"][[1]], "km", "mi"),
-                    `Sheffield Supertram` = measurements::conv_unit(new_data[new_data$name == "Sheffield Supertram", "route_km"][[1]], "km", "mi"),
-                    `Tyne and Wear Metro` = measurements::conv_unit(new_data[new_data$name == "Tyne And Wear Metro", "route_km"][[1]], "km", "mi"),
-                    `Manchester Metrolink` = measurements::conv_unit(new_data[new_data$name == "Manchester Metrolink", "route_km"][[1]], "km", "mi"),
-                    `Blackpool Tramway` = measurements::conv_unit(new_data[new_data$name == "Blackpool Tramway", "route_km"][[1]], "km", "mi"),
-                    `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                    England = `Docklands Light Railway` + `London Tramlink` + `England outside of London`,
-                    `Edinburgh Trams` = measurements::conv_unit(new_data[new_data$name == "Edinburgh Trams", "route_km"][[1]], "km", "mi"),
-                    GB = England + `Edinburgh Trams`,
-                    `London underground` = measurements::conv_unit(new_data[new_data$name == "London Underground", "route_km"][[1]], "km", "mi"),
-                    `Glasgow underground` = measurements::conv_unit(new_data[new_data$name == "Glasgow Underground", "route_km"][[1]], "km", "mi")/2)
-
-  message("LRT0204")
-
+  ##Find our data in the list
+  dplyr::bind_rows(old[[grep("0204", names(old))]],
+                   new)
 }
 
-# LRT0301a Passenger Revenue at actual prices ===================================================================================================================================================================
+# LRT0301a Passenger Revenue at actual prices ==================================
+lrt0301a <- function(new = new_data, old = min_tidy_dataset) {
 
-if (grepl("LRT0301a", names(min_tidy_dataset)[[i]], fixed = TRUE)){
+  new <- new %>%
+    dplyr::rowwise() %>%
+    ##Create total revenue in millions
+    dplyr::mutate(rev = sum(passenger_receipts, cons_eld_dis, cons_young,
+                            na.rm = TRUE)/1000000) %>%
+    ##Only keep new calculated values
+    dplyr::select(name, rev) %>%
+    tidyr::spread(name, rev) %>%
+    GB_summary()
 
-  min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-    tibble::add_row(`Financial year` = publication_fin_year,
-                    `Docklands Light Railway` = rowSums(dplyr::select(new_data[new_data$name == "Docklands Light Railway", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `London Tramlink` = rowSums(dplyr::select(new_data[new_data$name == "London Tramlink", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `Nottingham Express Transit` = rowSums(dplyr::select(new_data[new_data$name == "Nottingham Express Transit", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `Midland Metro` = rowSums(dplyr::select(new_data[new_data$name == "Midland Metro", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `Sheffield Supertram` = rowSums(dplyr::select(new_data[new_data$name == "Sheffield Supertram", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `Tyne and Wear Metro` = rowSums(dplyr::select(new_data[new_data$name == "Tyne And Wear Metro", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `Manchester Metrolink` = rowSums(dplyr::select(new_data[new_data$name == "Manchester Metrolink", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `Blackpool Tramway` = rowSums(dplyr::select(new_data[new_data$name == "Blackpool Tramway", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    London = `Docklands Light Railway` + `London Tramlink`,
-                    `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                    England = London + `England outside of London`,
-                    `Edinburgh Trams` = rowSums(dplyr::select(new_data[new_data$name == "Edinburgh Trams", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    GB = England + `Edinburgh Trams`,
-                    `London underground` = rowSums(dplyr::select(new_data[new_data$name == "London Underground", ], passenger_receipts:cons_young), na.rm = TRUE)/million,
-                    `Glasgow underground` = rowSums(dplyr::select(new_data[new_data$name == "Glasgow Underground", ], passenger_receipts:cons_young), na.rm = TRUE)/million)
-
-  message("LRT0301a")
-
+  ##Find our data in the list
+  dplyr::bind_rows(old[[grep("0301a", names(old))]],
+                   new)
 }
 
-# LRT0301b Passenger Revenue at current year prices ===================================================================================================================================================================
-# Depends on LRT0301a being updated so do not change the order of the sheets
+# LRT0301b Passenger Revenue at current year prices ============================
+lrt0301b <- function() {
 
-if (grepl("LRT0301b", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-  min_tidy_dataset[[i]] <- min_tidy_dataset$LRT0301a_passenger_rev_actual
-
-  for (j in 1:dplyr::count(min_tidy_dataset$LRT0301a_passenger_rev_actual)[[1]]){
-
-    lrt0301b_row <- min_tidy_dataset$LRT0301a_passenger_rev_actual[j, 2:length(min_tidy_dataset[[i]])[[1]]]
-    lrt0301b_row <- lrt0301b_row * gdp_deflator[gdp_deflator$fin_year == min_tidy_dataset[[i]]$`Financial year`[[j]], "relative_deflator"][[1]]
-
-    min_tidy_dataset[[i]][j, 2:length(min_tidy_dataset[[i]])[[1]]] <- lrt0301b_row
-
-
-  }
-
-  message("LRT0301b")
-
+  lrt0301a() %>%
+    ##Gather previously calculated data
+    tidyr::pivot_longer(cols = -`Financial year`) %>%
+    dplyr::left_join(gdp_deflator,
+                     by = c("Financial year" = "fin_year")) %>%
+    ##Calculate deflated revenue shenanigans
+    dplyr::mutate(value = value * relative_deflator) %>%
+    ##Remove deflator value
+    dplyr::select(-relative_deflator) %>%
+    #Spread values out again
+    tidyr::pivot_wider()
 
 }
+# LRT0302a Concessionary Revenue at actual prices ==============================
+lrt0302a <- function(new = new_data, old = min_tidy_dataset) {
 
-# LRT0302a Concessionary Revenue at actual prices ===================================================================================================================================================================
+  new <- new %>%
+    dplyr::rowwise() %>%
+    ##Create concession revenue in millions
+    dplyr::mutate(rev = sum(cons_eld_dis, cons_young,
+                            na.rm = TRUE)/1000000) %>%
+    ##Only keep new calculated values
+    dplyr::select(name, rev) %>%
+    tidyr::spread(name, rev) %>%
+    GB_summary()
 
-if (grepl("LRT0302a", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-  min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-    tibble::add_row(`Financial year` = publication_fin_year,
-                    `Docklands Light Railway` = rowSums(dplyr::select(new_data[new_data$name == "Docklands Light Railway", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `London Tramlink` = rowSums(dplyr::select(new_data[new_data$name == "London Tramlink", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `Nottingham Express Transit` = rowSums(dplyr::select(new_data[new_data$name == "Nottingham Express Transit", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `Midland Metro` = rowSums(dplyr::select(new_data[new_data$name == "Midland Metro", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `Sheffield Supertram` = rowSums(dplyr::select(new_data[new_data$name == "Sheffield Supertram", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `Tyne and Wear Metro` = rowSums(dplyr::select(new_data[new_data$name == "Tyne And Wear Metro", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `Manchester Metrolink` = rowSums(dplyr::select(new_data[new_data$name == "Manchester Metrolink", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `Blackpool Tramway` = rowSums(dplyr::select(new_data[new_data$name == "Blackpool Tramway", ], cons_eld_dis:cons_young), na.rm = TRUE)/million,
-                    `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                    England = `Docklands Light Railway` + `London Tramlink` + `England outside of London`)
-
-  message("LRT0302a")
-
+  ##Find our data in the list
+  dplyr::bind_rows(old[[grep("0302a", names(old))]],
+                   new)
 }
 
-# LRT0302b Concessionary Revenue at current year prices ===================================================================================================================================================================
-# Depends on LRT0302a being updated so do not change the order of the sheets
+# LRT0302b Concessionary Revenue at current year prices ========================
+lrt0302b <- function() {
 
-if (grepl("LRT0302b", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-  min_tidy_dataset[[i]] <- min_tidy_dataset$LRT0302a_cons_rev_actual
-
-  for (j in 1:dplyr::count(min_tidy_dataset$LRT0302a_cons_rev_actual)[[1]]){
-
-    lrt0302b_row <- min_tidy_dataset$LRT0302a_cons_rev_actual[j, 2:length(min_tidy_dataset[[i]])[[1]]]
-    lrt0302b_row <- lrt0302b_row * gdp_deflator[gdp_deflator$fin_year == min_tidy_dataset[[i]]$`Financial year`[[j]], "relative_deflator"][[1]]
-
-    min_tidy_dataset[[i]][j, 2:length(min_tidy_dataset[[i]])[[1]]] <- lrt0302b_row
-
-
-  }
-
-  message("LRT0302b")
+  lrt0302a() %>%
+    ##Gather previously calculated data
+    tidyr::pivot_longer(cols = -`Financial year`) %>%
+    dplyr::left_join(gdp_deflator,
+                     by = c("Financial year" = "fin_year")) %>%
+    ##Calculate deflated revenue shenanigans
+    dplyr::mutate(value = value * relative_deflator) %>%
+    ##Remove deflator value
+    dplyr::select(-relative_deflator) %>%
+    #Spread values out again
+    tidyr::pivot_wider()
 
 }
 

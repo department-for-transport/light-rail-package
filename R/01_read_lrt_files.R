@@ -216,27 +216,22 @@ read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
     dplyr::filter(!is.na(percent_change)) %>%
     #Calculate GDP deflator from previous row value and percent change
     dplyr::mutate(deflator_value = dplyr::case_when(!is.na(deflator_value) ~ deflator_value,
-                                                    TRUE ~ lag(deflator_value) * (1 + percent_change/100))) %>%
+                                                    TRUE ~ dplyr::lag(deflator_value, 1) * (1 + percent_change/100))) %>%
     #Remove percentage change column
-    dplyr::select(-percent_change)
+    dplyr::select(-percent_change) %>%
+    #Remove NA values
+    na.omit()
 
+  #Pull out current deflator
+    curr <- gdp_deflator %>%
+      dplyr::filter(fin_year == publication_fin_year) %>%
+      dplyr::pull(deflator_value)
 
-  # Keep only rows between first and last values
-  gdp_deflator <- gdp_deflator[grep(first_fin_year,
-                                    gdp_deflator$fin_year,
-                                    fixed = TRUE):
-                                 grep(publication_fin_year,
-                                      gdp_deflator$fin_year,
-                                      fixed = TRUE),]
-
-
-  # Change hyphens to forward slashes and add third row for relative deflator
-
+    # Calculate relative deflator by dividing by current value
   gdp_deflator <- gdp_deflator %>%
-    dplyr::mutate(relative_deflator =
-                    gdp_deflator[[grep(publication_fin_year,
-                                       gdp_deflator$fin_year,
-                                       fixed = TRUE), "deflator_value"]] / deflator_value)
+    dplyr::mutate(relative_deflator = curr/ deflator_value) %>%
+    #Remove deflator value
+    dplyr::select(-deflator_value)
 
   return(gdp_deflator)
 
@@ -278,7 +273,7 @@ read_population_mye <- function(population_mye_path){
     #Create sum columns for England outside London and England total
     dplyr::mutate("England outside of London" = sum(`Blackpool Tramway`, `Manchester Metrolink`, `Midland Metro`,
                                                  `Nottingham Express Transit`, `Sheffield Supertram`, `Tyne And Wear Metro`, na.rm = TRUE),
-                  "England" = sum(`England outside of London`, London)) %>%
+                  "England" = sum(`England outside ofLondon`, London)) %>%
     #Move back to long form
     tidyr::pivot_longer(names_to = "name", values_to = "pop", cols = dplyr::everything())
 
