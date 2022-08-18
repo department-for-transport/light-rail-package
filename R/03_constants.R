@@ -1,51 +1,11 @@
 # This file contains constants used in the tramlr functions
-
-#
-# column_names <- c("no_of_vehicles",
-#                   "no_of_stops",
-#                   "route_km",
-#                   "km_operated",
-#                   "total_boardings",
-#                   "cons_boardings",
-#                   "passenger_km",
-#                   "passenger_receipts",
-#                   "cons_eld_dis",
-#                   "cons_young",
-#                   "changes_to_fleet",
-#                   "basis",
-#                   "source_details",
-#                   "description",
-#                   "comments")
-
-# Cell positions of values in excel survey form
-
-cells <- list(no_of_vehicles_row = 10,
-              no_of_stops_row = 12,
-              route_km_row = 13,
-              km_operated_row = 21,
-              total_boardings_row = 28,
-              cons_boardings_row = 29,
-              passenger_km_row = 30,
-              passenger_receipts_row = 33,
-              cons_eld_dis_row = 38,
-              cons_young_row = 39,
-              changes_to_fleet_row = 16,
-              basis_row = 24,
-              source_details_row = 43,
-              description_row = 49,
-              comments_row = 53,
-              last_year_col = 3,
-              this_year_col = 5,
-              text_col = 1)
-
-
 # Vector of all tram systems
 
 all_tram_systems <- c("Blackpool Tramway",
                       "Docklands Light Railway",
                       "Edinburgh Trams",
                       "Glasgow underground",
-                      "London Tramlink",
+                      "London Trams",
                       "Manchester Metrolink",
                       "Midland Metro",
                       "Nottingham Express Transit",
@@ -78,7 +38,7 @@ number_col <- 3
 
 trams_in_england <- c("Blackpool Tramway",
                       "Docklands Light Railway",
-                      "London Tramlink",
+                      "London Trams",
                       "Manchester Metrolink",
                       "Midland Metro",
                       "Nottingham Express Transit",
@@ -90,7 +50,7 @@ trams_in_england <- c("Blackpool Tramway",
 # Used in calculate_headline_figures
 
 trams_in_london <- c("Docklands Light Railway",
-                     "London Tramlink")
+                     "London Trams")
 
 
 # Vector of tram systems in England outside London
@@ -133,7 +93,7 @@ population_mye_tab <- "MYE 5"
 # Used in read_population_mye
 
 area_codes <- list(c("E12000007", "Docklands Light Railway"),
-                   c("E12000007", "London Tramlink"),
+                   c("E12000007", "London Trams"),
                    c("E06000018", "Nottingham Express Transit"),
                    c("E11000005", "Midland Metro"),
                    c("E11000003", "Sheffield Supertram"),
