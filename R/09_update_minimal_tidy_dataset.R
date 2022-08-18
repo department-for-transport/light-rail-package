@@ -22,7 +22,7 @@
 #' @param publication_fin_year is a string containing the financial year to which the survey data
 #' refers. For example: "2019/20".
 #'
-#' @param save_min_tidy_dataset_path is a string containing the file path of the folder in which
+#' @param save_path is a string containing the file path of the folder in which
 #' you would like to save the updated minimal tidy dataset file. For Windows paths, each backslash
 #' must be changed to either a forward slash "/" or two backslashes "\\\\".
 #'
@@ -40,7 +40,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
                                         gdp_deflator_path,
                                         population_mye_path,
                                         publication_fin_year,
-                                        save_min_tidy_dataset_path){
+                                        save_path){
 
   # Check inputs
   tramlr::check_path(min_tidy_dataset_path)
@@ -48,7 +48,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   tramlr::check_path(gdp_deflator_path)
   tramlr::check_path(population_mye_path)
   tramlr::check_financial_year(publication_fin_year)
-  tramlr::check_path(save_min_tidy_dataset_path)
+  tramlr::check_path(save_path)
 
 
   # Read files
@@ -93,7 +93,7 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
   # Save file in directory given
 
   openxlsx::write.xlsx(min_tidy_dataset,
-                       file = paste0(file_name_year,
+                       file = paste0(save_path, "/", file_name_year,
                                                       "_minimal_tidy_dataset.xlsx"))
 
 }
