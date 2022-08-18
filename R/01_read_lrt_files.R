@@ -278,4 +278,3 @@ read_population_mye <- function(population_mye_path){
     tidyr::pivot_longer(names_to = "name", values_to = "pop", cols = dplyr::everything())
 
 }
-

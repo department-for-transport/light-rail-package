@@ -20,7 +20,7 @@ last_year_only <- function(survey_tibble){
 
     dplyr::filter(year == "last_year") %>%
 
-    dplyr::select(name:cons_young)
+    dplyr::select(name:variable_costs)
 
 }
 

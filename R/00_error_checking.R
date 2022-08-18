@@ -43,10 +43,9 @@ check_string <- function(string, string_type = "variable"){
 check_path <- function(path){
 
   tramlr::check_string(path, "path")
-
   if (!(dir.exists(path) | file.exists(path))){
 
-    not_exist <- paste(path, "\n The directory or file given by this path does not exist")
+    not_exist <- paste(path, "/n The directory or file given by this path does not exist")
 
     stop(not_exist)
 
