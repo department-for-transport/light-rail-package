@@ -185,12 +185,12 @@ generate_publication_charts <- function(minimal_tidy_dataset_path,
   # Get data into right format
 
   passenger_journeys_ten <- utils::tail(passenger_journeys, ten_year_comparison)
-  passenger_journeys_div <- dplyr::transmute(passenger_journeys_ten, `Financial year`, England_div = England * hundy_p / passenger_journeys_ten$England[[1]])
+  passenger_journeys_div <- dplyr::transmute(passenger_journeys_ten, `Financial year`, England_div = England * 100 / passenger_journeys_ten$England[[1]])
 
   vehicle_miles_index <- grep("LRT0106", names(minimal_tidy_dataset))
   vehicle_miles <- dplyr::select(minimal_tidy_dataset[[vehicle_miles_index]], `Financial year`, England)
   vehicle_miles <- utils::tail(vehicle_miles, ten_year_comparison)
-  vehicle_miles_div <- dplyr::transmute(vehicle_miles, `Financial year`, England_div = England * hundy_p / vehicle_miles$England[[1]])
+  vehicle_miles_div <- dplyr::transmute(vehicle_miles, `Financial year`, England_div = England * 100 / vehicle_miles$England[[1]])
 
   miles_vs_journeys <- tibble::tibble(`Financial year` = vehicle_miles_div$`Financial year`,
                                       vehicle_miles_div = vehicle_miles_div$England_div,
@@ -245,13 +245,13 @@ generate_publication_charts <- function(minimal_tidy_dataset_path,
   concession_revenue_index <- grep("LRT0302a", names(minimal_tidy_dataset))
   concession_revenue <- dplyr::select(minimal_tidy_dataset[[concession_revenue_index]], `Financial year`, England)
   concession_revenue <- utils::tail(concession_revenue, ten_year_comparison)
-  concession_revenue_div <- dplyr::transmute(concession_revenue, `Financial year`, England_div = England * hundy_p / concession_revenue$England[[1]])
+  concession_revenue_div <- dplyr::transmute(concession_revenue, `Financial year`, England_div = England * 100 / concession_revenue$England[[1]])
 
   gross_revenue_index <- grep("LRT0301a", names(minimal_tidy_dataset))
   gross_revenue <- dplyr::select(minimal_tidy_dataset[[gross_revenue_index]], `Financial year`, England)
   gross_revenue <- utils::tail(gross_revenue, ten_year_comparison)
   non_concession_revenue <- dplyr::transmute(gross_revenue, `Financial year`, non_con_England = England - concession_revenue$England)
-  non_concession_revenue_div <- dplyr::transmute(non_concession_revenue, `Financial year`, England_div = non_con_England * hundy_p / non_concession_revenue$non_con_England[[1]])
+  non_concession_revenue_div <- dplyr::transmute(non_concession_revenue, `Financial year`, England_div = non_con_England * 100 / non_concession_revenue$non_con_England[[1]])
 
 
 

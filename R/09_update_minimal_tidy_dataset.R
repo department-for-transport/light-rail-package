@@ -22,7 +22,7 @@
 #' @param publication_fin_year is a string containing the financial year to which the survey data
 #' refers. For example: "2019/20".
 #'
-#' @param save_min_tidy_dataset_path is a string containing the file path of the folder in which
+#' @param save_path is a string containing the file path of the folder in which
 #' you would like to save the updated minimal tidy dataset file. For Windows paths, each backslash
 #' must be changed to either a forward slash "/" or two backslashes "\\\\".
 #'
@@ -40,521 +40,60 @@ update_minimal_tidy_dataset <- function(min_tidy_dataset_path,
                                         gdp_deflator_path,
                                         population_mye_path,
                                         publication_fin_year,
-                                        save_min_tidy_dataset_path){
+                                        save_path){
 
   # Check inputs
-
   tramlr::check_path(min_tidy_dataset_path)
-
   tramlr::check_path(survey_folder_path)
-
   tramlr::check_path(gdp_deflator_path)
-
   tramlr::check_path(population_mye_path)
-
   tramlr::check_financial_year(publication_fin_year)
-
-  tramlr::check_path(save_min_tidy_dataset_path)
+  tramlr::check_path(save_path)
 
 
   # Read files
-
-  min_tidy_dataset <- tramlr::read_min_tidy_dataset(min_tidy_dataset_path)
-
-  new_data <- tramlr::read_lrt_folder(survey_folder_path)
-
-  gdp_deflator <- tramlr::read_gdp_deflator(gdp_deflator_path, publication_fin_year)
-
-  population_mye <- tramlr::read_population_mye(population_mye_path, publication_fin_year)
+  min_tidy_dataset <- read_min_tidy_dataset(min_tidy_dataset_path)
+  gdp_deflator <- read_gdp_deflator(gdp_deflator_path, publication_fin_year)
+  population_mye <- read_population_mye(population_mye_path)
 
 
   # Clean new_data
+  new_data <- read_lrt_folder(survey_folder_path) %>%
+    dplyr::filter(year == "this_year") %>%
+    dplyr::select(name:cons_young) %>%
+    #Mutate everything except name and year to a numeric
+    dplyr::mutate(across(c("no_of_vehicles":"cons_young"), as.numeric))
+
+  # Run all of the individual table functions to write to their respective locations
+  min_tidy_dataset[[grep("0101", names(min_tidy_dataset))]] <- lrt0101()
+  min_tidy_dataset[[grep("0102", names(min_tidy_dataset))]] <- lrt0102()
+  min_tidy_dataset[[grep("0103", names(min_tidy_dataset))]] <- lrt0103()
+  min_tidy_dataset[[grep("0104", names(min_tidy_dataset))]] <- lrt0104()
+  min_tidy_dataset[[grep("0105", names(min_tidy_dataset))]] <- lrt0105()
+  min_tidy_dataset[[grep("0106", names(min_tidy_dataset))]] <- lrt0106()
+  min_tidy_dataset[[grep("0107a", names(min_tidy_dataset))]] <- lrt0107a()
+  min_tidy_dataset[[grep("0107b", names(min_tidy_dataset))]] <- lrt0107b()
+  min_tidy_dataset[[grep("0108", names(min_tidy_dataset))]] <- lrt0108()
+  min_tidy_dataset[[grep("0109", names(min_tidy_dataset))]] <- lrt0109()
+  min_tidy_dataset[[grep("0201", names(min_tidy_dataset))]] <- lrt0201()
+  min_tidy_dataset[[grep("0202", names(min_tidy_dataset))]] <- lrt0202()
+  min_tidy_dataset[[grep("0203", names(min_tidy_dataset))]] <- lrt0203()
+  min_tidy_dataset[[grep("0204", names(min_tidy_dataset))]] <- lrt0204()
+  min_tidy_dataset[[grep("0301a", names(min_tidy_dataset))]] <- lrt0301a()
+  min_tidy_dataset[[grep("0301b", names(min_tidy_dataset))]] <- lrt0301b()
+  min_tidy_dataset[[grep("0302a", names(min_tidy_dataset))]] <- lrt0302a()
+  min_tidy_dataset[[grep("0302b", names(min_tidy_dataset))]] <- lrt0302b()
+  min_tidy_dataset[[grep("population", names(min_tidy_dataset))]] <- population_tab()
 
-  new_data <- dplyr::filter(new_data, year == "this_year")
-  new_data <- dplyr::select(new_data, name:variable_costs)
-  new_data <- suppressWarnings(dplyr::mutate_at(new_data, dplyr::vars(number_col:length(new_data)), function(x) as.numeric(x)))
-
-
-  # Go through each item in min_tidy_dataset list and update the data
-  # The method for updating depends on the name of the table
-
-  message("Updating...")
-
-  for (i in 1:length(min_tidy_dataset)){
-
-    # LRT0101 Passenger Journeys ===================================================================================================================================================================
-
-    if (grepl("LRT0101", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "total_boardings"][[1]]/million,
-                        `London Trams` = new_data[new_data$name == "London Trams", "total_boardings"][[1]]/million,
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "total_boardings"][[1]]/million,
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "total_boardings"][[1]]/million,
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "total_boardings"][[1]]/million,
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "total_boardings"][[1]]/million,
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "total_boardings"][[1]]/million,
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "total_boardings"][[1]]/million,
-                        London = `Docklands Light Railway` + `London Trams`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "total_boardings"][[1]]/million,
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = new_data[new_data$name == "London Underground", "total_boardings"][[1]]/million,
-                        `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "total_boardings"][[1]]/million)
-
-      message("LRT0101")
-
-    }
-
-    # LRT0102 Concessionary Journeys ================================================================================================================================================================
-
-    if (grepl("LRT0102", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "cons_boardings"][[1]]/million,
-                        `London Trams` = new_data[new_data$name == "London Trams", "cons_boardings"][[1]]/million,
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "cons_boardings"][[1]]/million,
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "cons_boardings"][[1]]/million,
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "cons_boardings"][[1]]/million,
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "cons_boardings"][[1]]/million,
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "cons_boardings"][[1]]/million,
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "cons_boardings"][[1]]/million,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = `Docklands Light Railway` + `London Trams` + `England outside of London`)
-
-      message("LRT0102")
-
-    }
-
-    # LRT0103 Passenger Kilometers  =================================================================================================================================================================
-
-    if (grepl("LRT0103", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "passenger_km"][[1]]/million,
-                        `London Trams` = new_data[new_data$name == "London Trams", "passenger_km"][[1]]/million,
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "passenger_km"][[1]]/million,
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "passenger_km"][[1]]/million,
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "passenger_km"][[1]]/million,
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "passenger_km"][[1]]/million,
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "passenger_km"][[1]]/million,
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "passenger_km"][[1]]/million,
-                        London = `Docklands Light Railway` + `London Trams`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "passenger_km"][[1]]/million,
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = new_data[new_data$name == "London Underground", "passenger_km"][[1]]/million,
-                        `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "passenger_km"][[1]]/million)
-
-      message("LRT0103")
-
-    }
-
-    # LRT0104 Passenger Miles  ======================================================================================================================================================================
-
-    if (grepl("LRT0104", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = measurements::conv_unit(new_data[new_data$name == "Docklands Light Railway", "passenger_km"][[1]], "km", "mi")/million,
-                        `London Trams` = measurements::conv_unit(new_data[new_data$name == "London Trams", "passenger_km"][[1]], "km", "mi")/million,
-                        `Nottingham Express Transit` = measurements::conv_unit(new_data[new_data$name == "Nottingham Express Transit", "passenger_km"][[1]], "km", "mi")/million,
-                        `Midland Metro` = measurements::conv_unit(new_data[new_data$name == "Midland Metro", "passenger_km"][[1]], "km", "mi")/million,
-                        `Sheffield Supertram` = measurements::conv_unit(new_data[new_data$name == "Sheffield Supertram", "passenger_km"][[1]], "km", "mi")/million,
-                        `Tyne and Wear Metro` = measurements::conv_unit(new_data[new_data$name == "Tyne And Wear Metro", "passenger_km"][[1]], "km", "mi")/million,
-                        `Manchester Metrolink` = measurements::conv_unit(new_data[new_data$name == "Manchester Metrolink", "passenger_km"][[1]], "km", "mi")/million,
-                        `Blackpool Tramway` = measurements::conv_unit(new_data[new_data$name == "Blackpool Tramway", "passenger_km"][[1]], "km", "mi")/million,
-                        London = `Docklands Light Railway` + `London Trams`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = measurements::conv_unit(new_data[new_data$name == "Edinburgh Trams", "passenger_km"][[1]], "km", "mi")/million,
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = measurements::conv_unit(new_data[new_data$name == "London Underground", "passenger_km"][[1]], "km", "mi")/million,
-                        `Glasgow underground` = measurements::conv_unit(new_data[new_data$name == "Glasgow Underground", "passenger_km"][[1]], "km", "mi")/million)
-
-      message("LRT0104")
-
-    }
-
-    # LRT0105 Kilometers Operated  ==================================================================================================================================================================
-    # Glasgow underground is divided by 3 because they count per carriage but there are 3 carriages per tram
-
-    if (grepl("LRT0105", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "km_operated"][[1]]/million,
-                        `London Trams` = new_data[new_data$name == "London Trams", "km_operated"][[1]]/million,
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "km_operated"][[1]]/million,
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "km_operated"][[1]]/million,
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "km_operated"][[1]]/million,
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "km_operated"][[1]]/million,
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "km_operated"][[1]]/million,
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "km_operated"][[1]]/million,
-                        London = `Docklands Light Railway` + `London Trams`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "km_operated"][[1]]/million,
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = new_data[new_data$name == "London Underground", "km_operated"][[1]]/million,
-                        `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "km_operated"][[1]]/(3*million))
-
-      message("LRT0105")
-
-    }
-
-    # LRT0106 Miles Operated ========================================================================================================================================================================
-    # Glasgow underground is divided by 3 because they count per carriage but there are 3 carriages per tram
-
-    if (grepl("LRT0106", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = measurements::conv_unit(new_data[new_data$name == "Docklands Light Railway", "km_operated"][[1]], "km", "mi")/million,
-                        `London Trams` = measurements::conv_unit(new_data[new_data$name == "London Trams", "km_operated"][[1]], "km", "mi")/million,
-                        `Nottingham Express Transit` = measurements::conv_unit(new_data[new_data$name == "Nottingham Express Transit", "km_operated"][[1]], "km", "mi")/million,
-                        `Midland Metro` = measurements::conv_unit(new_data[new_data$name == "Midland Metro", "km_operated"][[1]], "km", "mi")/million,
-                        `Sheffield Supertram` = measurements::conv_unit(new_data[new_data$name == "Sheffield Supertram", "km_operated"][[1]], "km", "mi")/million,
-                        `Tyne and Wear Metro` = measurements::conv_unit(new_data[new_data$name == "Tyne And Wear Metro", "km_operated"][[1]], "km", "mi")/million,
-                        `Manchester Metrolink` = measurements::conv_unit(new_data[new_data$name == "Manchester Metrolink", "km_operated"][[1]], "km", "mi")/million,
-                        `Blackpool Tramway` = measurements::conv_unit(new_data[new_data$name == "Blackpool Tramway", "km_operated"][[1]], "km", "mi")/million,
-                        London = `Docklands Light Railway` + `London Trams`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = measurements::conv_unit(new_data[new_data$name == "Edinburgh Trams", "km_operated"][[1]], "km", "mi")/million,
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = measurements::conv_unit(new_data[new_data$name == "London Underground", "km_operated"][[1]], "km", "mi")/million,
-                        `Glasgow underground` = measurements::conv_unit(new_data[new_data$name == "Glasgow Underground", "km_operated"][[1]], "km", "mi")/(3*million))
-
-      message("LRT0106")
-
-    }
-
-    # LRT0107a Average Length of Journey (km) ==================================================================================================================================================================
-    # London, England outside of London and England depend on LRT0101 and LRT0103 being updated already, so don't change their order in the spreadsheet
-
-    if (grepl("LRT0107a", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "passenger_km"][[1]]/new_data[new_data$name == "Docklands Light Railway", "total_boardings"][[1]],
-                        `London Trams` = new_data[new_data$name == "London Trams", "passenger_km"][[1]]/new_data[new_data$name == "London Trams", "total_boardings"][[1]],
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "passenger_km"][[1]]/new_data[new_data$name == "Nottingham Express Transit", "total_boardings"][[1]],
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "passenger_km"][[1]]/new_data[new_data$name == "Midland Metro", "total_boardings"][[1]],
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "passenger_km"][[1]]/new_data[new_data$name == "Sheffield Supertram", "total_boardings"][[1]],
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "passenger_km"][[1]]/new_data[new_data$name == "Tyne And Wear Metro", "total_boardings"][[1]],
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "passenger_km"][[1]]/new_data[new_data$name == "Manchester Metrolink", "total_boardings"][[1]],
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "passenger_km"][[1]]/new_data[new_data$name == "Blackpool Tramway", "total_boardings"][[1]],
-                        London = utils::tail(min_tidy_dataset$LRT0103_passenger_km$London, n=1)/utils::tail(min_tidy_dataset$LRT0101_passenger_journeys$London, n=1),
-                        `England outside of London` = utils::tail(min_tidy_dataset$LRT0103_passenger_km$`England outside of London`, n=1)/utils::tail(min_tidy_dataset$LRT0101_passenger_journeys$`England outside of London`, n=1),
-                        England = utils::tail(min_tidy_dataset$LRT0103_passenger_km$England, n=1)/utils::tail(min_tidy_dataset$LRT0101_passenger_journeys$England, n=1))
-
-      message("LRT0107a")
-
-    }
-
-    # LRT0107b Average Length of Journey (miles) =======================================================================================================================================================
-    # Depends on LRT0107a being updated so don't change their order
-
-    if (grepl("LRT0107b", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`Docklands Light Railway`, 1), "km", "mi"),
-                        `London Trams` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`London Trams`, 1), "km", "mi"),
-                        `Nottingham Express Transit` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`Nottingham Express Transit`, 1), "km", "mi"),
-                        `Midland Metro` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`Midland Metro`, 1), "km", "mi"),
-                        `Sheffield Supertram` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`Sheffield Supertram`, 1), "km", "mi"),
-                        `Tyne and Wear Metro` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`Tyne and Wear Metro`, 1), "km", "mi"),
-                        `Manchester Metrolink` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`Manchester Metrolink`, 1), "km", "mi"),
-                        `Blackpool Tramway` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`Blackpool Tramway`, 1), "km", "mi"),
-                        London = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$London, 1), "km", "mi"),
-                        `England outside of London` = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$`England outside of London`, 1), "km", "mi"),
-                        England = measurements::conv_unit(utils::tail(min_tidy_dataset$LRT0107a_av_length_of_journey_k$England, 1), "km", "mi"))
-
-      message("LRT0107b")
-
-    }
-
-    # LRT0108 Average Occupancy  ======================================================================================================================================================================
-    # England outside of London and England depend on LRT0103 and LRT0105 being updated already, so don't change their order in the spreadsheet
-
-    if (grepl("LRT0108", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "passenger_km"][[1]]/new_data[new_data$name == "Docklands Light Railway", "km_operated"][[1]],
-                        `London Trams` = new_data[new_data$name == "London Trams", "passenger_km"][[1]]/new_data[new_data$name == "London Trams", "km_operated"][[1]],
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "passenger_km"][[1]]/new_data[new_data$name == "Nottingham Express Transit", "km_operated"][[1]],
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "passenger_km"][[1]]/new_data[new_data$name == "Midland Metro", "km_operated"][[1]],
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "passenger_km"][[1]]/new_data[new_data$name == "Sheffield Supertram", "km_operated"][[1]],
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "passenger_km"][[1]]/new_data[new_data$name == "Tyne And Wear Metro", "km_operated"][[1]],
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "passenger_km"][[1]]/new_data[new_data$name == "Manchester Metrolink", "km_operated"][[1]],
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "passenger_km"][[1]]/new_data[new_data$name == "Blackpool Tramway", "km_operated"][[1]],
-                        `England outside of London` = utils::tail(min_tidy_dataset$LRT0103_passenger_km$`England outside of London`, n=1)/utils::tail(min_tidy_dataset$LRT0105_vehicle_km$`England outside of London`, n=1),
-                        England = utils::tail(min_tidy_dataset$LRT0103_passenger_km$England, n=1)/utils::tail(min_tidy_dataset$LRT0105_vehicle_km$England, n=1))
-
-      message("LRT0108")
-
-    }
-
-    # LRT0109 Passenger Journeys per head  ==================================================================================================================================================================
-    # London, England outside of London and England depend on LRT0101 being updated already, so don't change their order in the spreadsheet
-
-    if (grepl("LRT0109", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "total_boardings"][[1]]/population_mye$`Docklands Light Railway`[[1]],
-                        `London Trams` = new_data[new_data$name == "London Trams", "total_boardings"][[1]]/population_mye$`London Trams`[[1]],
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "total_boardings"][[1]]/population_mye$`Nottingham Express Transit`[[1]],
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "total_boardings"][[1]]/population_mye$`Midland Metro`[[1]],
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "total_boardings"][[1]]/population_mye$`Sheffield Supertram`[[1]],
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "total_boardings"][[1]]/population_mye$`Tyne And Wear Metro`[[1]],
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "total_boardings"][[1]]/population_mye$`Manchester Metrolink`[[1]],
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "total_boardings"][[1]]/population_mye$`Blackpool Tramway`[[1]],
-                        London = million*utils::tail(min_tidy_dataset$LRT0101_passenger_journeys$London, n=1)/population_mye$London[[1]],
-                        `England outside of London` = million*utils::tail(min_tidy_dataset$LRT0101_passenger_journeys$`England outside of London`, n=1)/population_mye$`England outside London`[[1]],
-                        England = million*utils::tail(min_tidy_dataset$LRT0101_passenger_journeys$England, n=1)/population_mye$England[[1]])
-
-      message("LRT0109")
-
-    }
-
-    # LRT0201 Number of Stops ===========================================================================================================================================================================
-
-    if (grepl("LRT0201", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "no_of_stops"][[1]],
-                        `London Trams` = new_data[new_data$name == "London Trams", "no_of_stops"][[1]],
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "no_of_stops"][[1]],
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "no_of_stops"][[1]],
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "no_of_stops"][[1]],
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "no_of_stops"][[1]],
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "no_of_stops"][[1]],
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "no_of_stops"][[1]],
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = `Docklands Light Railway` + `London Trams` + `England outside of London`,
-                        `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "no_of_stops"][[1]],
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = new_data[new_data$name == "London Underground", "no_of_stops"][[1]],
-                        `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "no_of_stops"][[1]])
-
-      message("LRT0201")
-
-    }
-
-    # LRT0202 Number of Tram Cars ===========================================================================================================================================================================
-
-    if (grepl("LRT0202", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "no_of_vehicles"][[1]],
-                        `London Trams` = new_data[new_data$name == "London Trams", "no_of_vehicles"][[1]],
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "no_of_vehicles"][[1]],
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "no_of_vehicles"][[1]],
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "no_of_vehicles"][[1]],
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "no_of_vehicles"][[1]],
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "no_of_vehicles"][[1]],
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "no_of_vehicles"][[1]],
-                        London = `Docklands Light Railway` + `London Trams`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "no_of_vehicles"][[1]],
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = new_data[new_data$name == "London Underground", "no_of_vehicles"][[1]],
-                        `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "no_of_vehicles"][[1]])
-
-      message("LRT0202")
-
-    }
-
-    # LRT0203 Route Kilometers ===========================================================================================================================================================================
-    # Glasgow is divided by two because they count both directions
-
-    if (grepl("LRT0203", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = new_data[new_data$name == "Docklands Light Railway", "route_km"][[1]],
-                        `London Trams` = new_data[new_data$name == "London Trams", "route_km"][[1]],
-                        `Nottingham Express Transit` = new_data[new_data$name == "Nottingham Express Transit", "route_km"][[1]],
-                        `Midland Metro` = new_data[new_data$name == "Midland Metro", "route_km"][[1]],
-                        `Sheffield Supertram` = new_data[new_data$name == "Sheffield Supertram", "route_km"][[1]],
-                        `Tyne and Wear Metro` = new_data[new_data$name == "Tyne And Wear Metro", "route_km"][[1]],
-                        `Manchester Metrolink` = new_data[new_data$name == "Manchester Metrolink", "route_km"][[1]],
-                        `Blackpool Tramway` = new_data[new_data$name == "Blackpool Tramway", "route_km"][[1]],
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = `Docklands Light Railway` + `London Trams` + `England outside of London`,
-                        `Edinburgh Trams` = new_data[new_data$name == "Edinburgh Trams", "route_km"][[1]],
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = new_data[new_data$name == "London Underground", "route_km"][[1]],
-                        `Glasgow underground` = new_data[new_data$name == "Glasgow Underground", "route_km"][[1]]/2)
-
-      message("LRT0203")
-
-    }
-
-    # LRT0204 Route Miles ========================================================================================================================================================================
-    # Glasgow is divided by two because they count both directions
-
-    if (grepl("LRT0204", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = measurements::conv_unit(new_data[new_data$name == "Docklands Light Railway", "route_km"][[1]], "km", "mi"),
-                        `London Trams` = measurements::conv_unit(new_data[new_data$name == "London Trams", "route_km"][[1]], "km", "mi"),
-                        `Nottingham Express Transit` = measurements::conv_unit(new_data[new_data$name == "Nottingham Express Transit", "route_km"][[1]], "km", "mi"),
-                        `Midland Metro` = measurements::conv_unit(new_data[new_data$name == "Midland Metro", "route_km"][[1]], "km", "mi"),
-                        `Sheffield Supertram` = measurements::conv_unit(new_data[new_data$name == "Sheffield Supertram", "route_km"][[1]], "km", "mi"),
-                        `Tyne and Wear Metro` = measurements::conv_unit(new_data[new_data$name == "Tyne And Wear Metro", "route_km"][[1]], "km", "mi"),
-                        `Manchester Metrolink` = measurements::conv_unit(new_data[new_data$name == "Manchester Metrolink", "route_km"][[1]], "km", "mi"),
-                        `Blackpool Tramway` = measurements::conv_unit(new_data[new_data$name == "Blackpool Tramway", "route_km"][[1]], "km", "mi"),
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = `Docklands Light Railway` + `London Trams` + `England outside of London`,
-                        `Edinburgh Trams` = measurements::conv_unit(new_data[new_data$name == "Edinburgh Trams", "route_km"][[1]], "km", "mi"),
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = measurements::conv_unit(new_data[new_data$name == "London Underground", "route_km"][[1]], "km", "mi"),
-                        `Glasgow underground` = measurements::conv_unit(new_data[new_data$name == "Glasgow Underground", "route_km"][[1]], "km", "mi")/2)
-
-      message("LRT0204")
-
-    }
-
-    # LRT0301a Passenger Revenue at actual prices ===================================================================================================================================================================
-
-    if (grepl("LRT0301a", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = rowSums(dplyr::select(new_data[new_data$name == "Docklands Light Railway", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `London Trams` = rowSums(dplyr::select(new_data[new_data$name == "London Trams", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `Nottingham Express Transit` = rowSums(dplyr::select(new_data[new_data$name == "Nottingham Express Transit", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `Midland Metro` = rowSums(dplyr::select(new_data[new_data$name == "Midland Metro", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `Sheffield Supertram` = rowSums(dplyr::select(new_data[new_data$name == "Sheffield Supertram", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `Tyne and Wear Metro` = rowSums(dplyr::select(new_data[new_data$name == "Tyne And Wear Metro", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `Manchester Metrolink` = rowSums(dplyr::select(new_data[new_data$name == "Manchester Metrolink", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `Blackpool Tramway` = rowSums(dplyr::select(new_data[new_data$name == "Blackpool Tramway", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        London = `Docklands Light Railway` + `London Trams`,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = London + `England outside of London`,
-                        `Edinburgh Trams` = rowSums(dplyr::select(new_data[new_data$name == "Edinburgh Trams", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        GB = England + `Edinburgh Trams`,
-                        `London underground` = rowSums(dplyr::select(new_data[new_data$name == "London Underground", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million,
-                        `Glasgow underground` = rowSums(dplyr::select(new_data[new_data$name == "Glasgow Underground", ], passenger_receipts:cons_revenue), na.rm = TRUE)/million)
-
-      message("LRT0301a")
-
-    }
-
-    # LRT0301b Passenger Revenue at current year prices ===================================================================================================================================================================
-    # Depends on LRT0301a being updated so do not change the order of the sheets
-
-    if (grepl("LRT0301b", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset$LRT0301a_passenger_rev_actual
-
-      for (j in 1:dplyr::count(min_tidy_dataset$LRT0301a_passenger_rev_actual)[[1]]){
-
-        lrt0301b_row <- min_tidy_dataset$LRT0301a_passenger_rev_actual[j, 2:length(min_tidy_dataset[[i]])[[1]]]
-        lrt0301b_row <- lrt0301b_row * gdp_deflator[gdp_deflator$fin_year == min_tidy_dataset[[i]]$`Financial year`[[j]], "relative_deflator"][[1]]
-
-        min_tidy_dataset[[i]][j, 2:length(min_tidy_dataset[[i]])[[1]]] <- lrt0301b_row
-
-
-      }
-
-      message("LRT0301b")
-
-
-    }
-
-    # LRT0302a Concessionary Revenue at actual prices ===================================================================================================================================================================
-
-    if (grepl("LRT0302a", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(`Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = rowSums(dplyr::select(new_data[new_data$name == "Docklands Light Railway", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `London Trams` = rowSums(dplyr::select(new_data[new_data$name == "London Trams", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `Nottingham Express Transit` = rowSums(dplyr::select(new_data[new_data$name == "Nottingham Express Transit", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `Midland Metro` = rowSums(dplyr::select(new_data[new_data$name == "Midland Metro", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `Sheffield Supertram` = rowSums(dplyr::select(new_data[new_data$name == "Sheffield Supertram", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `Tyne and Wear Metro` = rowSums(dplyr::select(new_data[new_data$name == "Tyne And Wear Metro", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `Manchester Metrolink` = rowSums(dplyr::select(new_data[new_data$name == "Manchester Metrolink", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `Blackpool Tramway` = rowSums(dplyr::select(new_data[new_data$name == "Blackpool Tramway", ], cons_revenue_eld_dis:cons_revenue_young), na.rm = TRUE)/million,
-                        `England outside of London` = `Nottingham Express Transit` + `Midland Metro` + `Sheffield Supertram` + `Tyne and Wear Metro` + `Manchester Metrolink` + `Blackpool Tramway`,
-                        England = `Docklands Light Railway` + `London Trams` + `England outside of London`)
-
-      message("LRT0302a")
-
-    }
-
-    # LRT0302b Concessionary Revenue at current year prices ===================================================================================================================================================================
-    # Depends on LRT0302a being updated so do not change the order of the sheets
-
-    if (grepl("LRT0302b", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset$LRT0302a_cons_rev_actual
-
-      for (j in 1:dplyr::count(min_tidy_dataset$LRT0302a_cons_rev_actual)[[1]]){
-
-        lrt0302b_row <- min_tidy_dataset$LRT0302a_cons_rev_actual[j, 2:length(min_tidy_dataset[[i]])[[1]]]
-        lrt0302b_row <- lrt0302b_row * gdp_deflator[gdp_deflator$fin_year == min_tidy_dataset[[i]]$`Financial year`[[j]], "relative_deflator"][[1]]
-
-        min_tidy_dataset[[i]][j, 2:length(min_tidy_dataset[[i]])[[1]]] <- lrt0302b_row
-
-
-      }
-
-      message("LRT0302b")
-
-    }
-
-    # population tab ================================================================================================================================================
-
-    if (grepl("population", names(min_tidy_dataset)[[i]], fixed = TRUE)){
-
-      min_tidy_dataset[[i]] <- min_tidy_dataset[[i]] %>%
-        tibble::add_row(year_mid = population_mye$year_mid[[1]],
-                        `Financial year` = publication_fin_year,
-                        `Docklands Light Railway` = population_mye$`Docklands Light Railway`[[1]],
-                        `London Trams` = population_mye$`London Trams`[[1]],
-                        `Nottingham Express Transit` = population_mye$`Nottingham Express Transit`[[1]],
-                        `Midland Metro` = population_mye$`Midland Metro`[[1]],
-                        `Sheffield Supertram` = population_mye$`Sheffield Supertram`[[1]],
-                        `Tyne and Wear Metro` = population_mye$`Tyne And Wear Metro`[[1]],
-                        `Manchester Metrolink` = population_mye$`Manchester Metrolink`[[1]],
-                        `Blackpool Tramway` = population_mye$`Blackpool Tramway`[[1]],
-                        London = population_mye$London[[1]],
-                        `England outside of London` = population_mye$`England outside London`[[1]],
-                        England = population_mye$England[[1]])
-
-      message("Population table")
-
-    }
-
-  }
-
-  # Save updated minimal tidy dataset in specified folder
 
   # Get year to have in file name, for example 2019/20 file name year is 2020
-
   file_name_year <- as.integer(strsplit(publication_fin_year, "/")[[1]])
   file_name_year <- as.character(file_name_year[[1]]+1)
 
   # Save file in directory given
 
-  openxlsx::write.xlsx(min_tidy_dataset, file = paste(save_min_tidy_dataset_path,
-                                                      paste(file_name_year, "minimal_tidy_dataset.xlsx", sep = "_"),
-                                                      sep = "/"))
+  openxlsx::write.xlsx(min_tidy_dataset,
+                       file = paste0(save_path, "/", file_name_year,
+                                                      "_minimal_tidy_dataset.xlsx"))
 
 }

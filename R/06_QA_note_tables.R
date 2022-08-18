@@ -66,7 +66,7 @@ lrt_make_QA_tables <- function(survey_response){
 
   cons_young_tbl <- dplyr::mutate(cons_young_tbl,
                                   diff = this_year - last_year,
-                                  percent_change = tramlr::round_up((diff / last_year) * hundy_p, digits = 2))
+                                  percent_change = tramlr::round_up((diff / last_year) * 100, digits = 2))
 
 
 
@@ -91,7 +91,7 @@ lrt_make_QA_tables <- function(survey_response){
 
     dummy_tibble <- dplyr::mutate(dummy_tibble,
                                   diff = this_year - last_year,
-                                  percent_change = tramlr::round_up((diff / last_year) * hundy_p, digits = 2))
+                                  percent_change = tramlr::round_up((diff / last_year) * 100, digits = 2))
 
     lrt_QA_tables[[paste(colnames(survey_response)[[i]], "tbl", sep = "_")]] <- dummy_tibble
 

@@ -1,5 +1,3 @@
-library(dplyr)
-
 #' Reads a Light Rail and Tram survey form
 #'
 #' This function reads a single Light Rail and Tram survey form and returns a
@@ -9,8 +7,8 @@ library(dplyr)
 #' For Windows paths, each backslash must be changed to either a forward slash "/"
 #' or two backslashes "\\\\".
 #'
-#' @return A tibble containing all the data entries
-#' in the survey form. This does not include the contact details or (currently) comments.
+#' @return A 2x17 tibble containing all the data entries
+#' in the survey form. This does not include the contact details.
 #'
 #' @examples
 #' read_lrt_file("G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/5. RAP Data/Received Survey forms/2019-20 DLR.xlsx")
@@ -25,44 +23,73 @@ read_lrt_file <- function(survey_path){
   survey_form = readxl::read_excel(survey_path)
 
 
+  # Extract operator name from survey form
+
+  operator_name <- stringr::str_to_title(survey_form[[1, 1]])
+
+
   # Extract data from survey form
 
-  test <- survey_form %>%
-    rename(Question = `TRAM AND METRO OPERATOR ANNUAL RETURN [STATS100T]`,
-           last_year = `...3`,
-           this_year = `...5`) %>%
-    select(Question, last_year, this_year) %>%
-    mutate(name = survey_form[[1,1]]) %>%
-    filter(grepl("[a-zA-Z]{1}\\d{1}", Question)) %>%
-    mutate(question_text = case_when(
-      Question == "Q1" ~ "no_of_vehicles",
-      Question == "Q2" ~ "no_of_stops",
-      Question == "Q3" ~ "route_km",
-      Question == "Q4" ~ "km_operated",
-      Question == "Q5" ~ "total_boardings",
-      Question == "Q6" ~ "cons_boardings",
-      Question == "Q6a" ~ "cons_eld_dis",
-      Question == "Q6b" ~ "cons_young",
-      Question == "Q7" ~ "passenger_km",
-      Question == "Q8a" ~ "passenger_receipts",
-      Question == "Q9" ~ "cons_revenue",
-      Question == "Q9a" ~ "cons_revenue_eld_dis",
-      Question == "Q9b" ~ "cons_revenue_young",
-      Question == "Q8b" ~ "passenger_receipts_la",
-      Question == "Q10" ~ "other_revenue",
-      Question == "Q11" ~ "total_op_costs",
-      Question == "Q11a" ~ "fixed_costs",
-      Question == "Q11b" ~ "semi_fixed_costs",
-      Question == "Q11c" ~ "variable_costs",
+  xl_data <- tibble::tibble(
+    name               = c(operator_name, operator_name),
+    year               = c("this_year", "last_year"),
+    no_of_vehicles     = c(survey_form[[cells$no_of_vehicles_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$no_of_vehicles_row,
+                                   cells$last_year_col]]),
+    no_of_stops        = c(survey_form[[cells$no_of_stops_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$no_of_stops_row,
+                                   cells$last_year_col]]),
+    route_km           = c(survey_form[[cells$route_km_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$route_km_row,
+                                   cells$last_year_col]]),
+    km_operated        = c(survey_form[[cells$km_operated_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$km_operated_row,
+                                   cells$last_year_col]]),
+    total_boardings    = c(survey_form[[cells$total_boardings_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$total_boardings_row,
+                                   cells$last_year_col]]),
+    cons_boardings     = c(survey_form[[cells$cons_boardings_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$cons_boardings_row,
+                                   cells$last_year_col]]),
+    passenger_km       = c(survey_form[[cells$passenger_km_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$passenger_km_row,
+                                   cells$last_year_col]]),
+    passenger_receipts = c(survey_form[[cells$passenger_receipts_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$passenger_receipts_row,
+                                   cells$last_year_col]]),
+    cons_eld_dis       = c(survey_form[[cells$cons_eld_dis_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$cons_eld_dis_row,
+                                   cells$last_year_col]]),
+    cons_young         = c(survey_form[[cells$cons_young_row,
+                                   cells$this_year_col]],
+                           survey_form[[cells$cons_young_row,
+                                   cells$last_year_col]]),
+    changes_to_fleet   = c(survey_form[[cells$changes_to_fleet_row,
+                                   cells$text_col]],
+                           NA),
+    basis              = c(survey_form[[cells$basis_row,
+                                   cells$text_col]],
+                           NA),
+    source_details     = c(survey_form[[cells$source_details_row,
+                                   cells$text_col]],
+                           NA),
+    description        = c(survey_form[[cells$description_row,
+                                   cells$text_col]],
+                           NA),
+    comments           = c(survey_form[[cells$comments_row,
+                                   cells$text_col]],
+                           NA)
+  )
 
-      TRUE ~ "Unsure")) %>%
-    filter(question_text != "Unsure") %>%
-    select(-Question) %>%
-    tidyr::pivot_longer(cols = c("this_year", "last_year"),
-                        names_to = "year",
-                        values_to= "value") %>%
-    tidyr::pivot_wider(names_from = "question_text",
-                       values_from = "value")
 }
 
 
@@ -77,8 +104,8 @@ read_lrt_file <- function(survey_path){
 #' must contain the survey forms and nothing else. The path should not end with slashes. For Windows
 #' paths, each backslash must be changed to either a forward slash "/" or two backslashes "\\\\".
 #'
-#' @return A 2dx21 tibble (where d is the number of survey responses in the folder) containing all
-#' the data entries in each survey form. This does not include the contact details  or (currently) comments.
+#' @return A 2dx17 tibble (where d is the number of survey responses in the folder) containing all
+#' the data entries in each survey form. This does not include the contact details.
 #'
 #' @examples
 #' read_lrt_folder("G:/AFP/RLTDAll/STS/003 BLT/003 LIGHT RAIL/0001 Data/2020/5. RAP Data/Received Survey forms")
@@ -87,21 +114,18 @@ read_lrt_file <- function(survey_path){
 read_lrt_folder <- function(survey_folder_path){
 
 
-  files <- dir(survey_folder_path, pattern = ".xlsx")
+  files <- dir(survey_folder_path,
+               pattern = ".xlsx",
+               full.names = TRUE)
 
-  full_data <- NULL
+  #Loop over all files in directory
+  purrr::map_df(.x = files,
+                .f = read_lrt_file)
 
-  for (i in 1:length(files)){
-
-    single_data <- read_lrt_file(paste(survey_folder_path, files[i], sep = "/"))
-
-    full_data <- dplyr::bind_rows(full_data, single_data)
-
-  }
-
-  return(full_data)
 
 }
+
+
 
 
 #' Reads email comments file
@@ -124,11 +148,12 @@ read_lrt_folder <- function(survey_folder_path){
 
 read_email_response <- function(email_response_path){
 
-  email_response <- readxl::read_excel(email_response_path)
-
-  email_response %>% tidyr::drop_na()
+  email_response <- readxl::read_excel(email_response_path) %>%
+    tidyr::drop_na()
 
 }
+
+
 
 #' Reads the Minimal Tidy Dataset excel file
 #'
@@ -151,7 +176,6 @@ read_min_tidy_dataset <- function(min_tidy_dataset_path){
                         readxl::excel_sheets() %>%
                         purrr::set_names() %>%
                         purrr::map(readxl::read_excel, path = min_tidy_dataset_path)
-
 }
 
 #' Reads and tidys the GDP Deflator excel file
@@ -175,65 +199,39 @@ read_min_tidy_dataset <- function(min_tidy_dataset_path){
 
 read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
 
-  # Put publication_fin_year and first_fin_year (in constants.R) into format matching
-  # financial year column in GDP deflator table
-
-  publication_fin_year_hyphen <- gsub("/", "-", publication_fin_year)
-
-  first_fin_year_hyphen <- gsub("/", "-", first_fin_year)
-
-
   # Import GDP Deflator excel sheet and take first 3 columns
 
-  gdp_deflator <- readxl::read_excel(gdp_deflator_path)
+  gdp_deflator <- readxl::read_excel(gdp_deflator_path)[1:3]
 
-  gdp_deflator <- dplyr::select(gdp_deflator, colnames(gdp_deflator)[[1]]:colnames(gdp_deflator)[[3]])
+  # Rename columns nicely
+  names(gdp_deflator) <- c("fin_year", "deflator_value", "percent_change")
 
+  #Clean up FY values to remove footnotes etc and swap hyphens for forward slashes
+  gdp_deflator <- gdp_deflator %>%
+    dplyr::mutate(fin_year = gsub("(\\d{4}\\-\\d{2}).*", "\\1", fin_year),
+                  fin_year = gsub("[-]", "/", fin_year)) %>%
+  # Set the gdp deflator value based on the percentage change on previous year
+    dplyr::mutate_at(.vars = c("deflator_value", "percent_change"), function(x) as.numeric(x)) %>%
+    #Remove NA values
+    dplyr::filter(!is.na(percent_change)) %>%
+    #Calculate GDP deflator from previous row value and percent change
+    dplyr::mutate(deflator_value = dplyr::case_when(!is.na(deflator_value) ~ deflator_value,
+                                                    TRUE ~ dplyr::lag(deflator_value, 1) * (1 + percent_change/100))) %>%
+    #Remove percentage change column
+    dplyr::select(-percent_change) %>%
+    #Remove NA values
+    na.omit()
 
-  # For each row, check if first_fin_year or publication_fin_year occur in the first column
-  # If a row matches, save the row index
+  #Pull out current deflator
+    curr <- gdp_deflator %>%
+      dplyr::filter(fin_year == publication_fin_year) %>%
+      dplyr::pull(deflator_value)
 
-  for (i in 1:dplyr::count(gdp_deflator)[[1]]){
-
-    if (grepl(first_fin_year_hyphen, gdp_deflator[[i,1]], fixed = TRUE)){
-
-      first_row <- i
-
-    } else if (grepl(publication_fin_year_hyphen, gdp_deflator[[i,1]], fixed = TRUE)){
-
-      last_row <- i
-
-    }
-
-  }
-
-
-  # Remove extra characters from last_row year and set the gdp deflator value based on the
-  # percentage change on previous year
-
-  gdp_deflator[[last_row, 1]] <- publication_fin_year_hyphen
-
-  gdp_deflator <- dplyr::mutate_at(gdp_deflator, dplyr::vars(2:3), function(x) as.numeric(x))
-
-  gdp_deflator[[last_row, 2]] <- gdp_deflator[[last_row - 1, 2]] * (1 + gdp_deflator[[last_row, 3]]/hundy_p)
-
-
-  # Cut table down to years between first and last row inclusive, and remove third column
-
-  gdp_deflator <- gdp_deflator[first_row:last_row, 1:2]
-
-  colnames(gdp_deflator)[[1]] <-  "fin_year"
-
-  colnames(gdp_deflator)[[2]] <- "deflator_value"
-
-
-  # Change hyphens to forward slashes and add third row for relative deflator
-
-  this_year_deflator <- utils::tail(gdp_deflator$deflator_value, n = 1)
-
-  gdp_deflator$fin_year <- purrr::map_chr(gdp_deflator$fin_year, ~gsub("-", "/", .))
-
-  gdp_deflator <- dplyr::mutate(gdp_deflator, relative_deflator = this_year_deflator / deflator_value)
+    # Calculate relative deflator by dividing by current value
+  gdp_deflator <- gdp_deflator %>%
+    dplyr::mutate(relative_deflator = curr/ deflator_value) %>%
+    #Remove deflator value
+    dplyr::select(-deflator_value)
 
   return(gdp_deflator)
 
@@ -259,65 +257,24 @@ read_gdp_deflator <- function(gdp_deflator_path, publication_fin_year){
 #'                     "2019/20")
 #'
 
-read_population_mye <- function(population_mye_path, publication_fin_year){
-
-  # Get mid year date, for example 2019/20 mid year date is 2018
-
-  mid_year_date <- as.integer(strsplit(publication_fin_year, "/")[[1]])
-
-  mid_year_date <- as.character(mid_year_date[[1]]-1)
-
+read_population_mye <- function(population_mye_path){
 
   # Read MYE 5 tab from excel file
-
-  population_mye_full <- readxl::read_excel(population_mye_path, population_mye_tab)
-
-  population_mye_full <- dplyr::select(population_mye_full, 1:5)
-
-
-  # Create tibble with just year_mid and financial year
-
-  fin_year <- "Financial year"
-
-  population_mye <- dplyr::tibble(year_mid = mid_year_date,
-                                  !!fin_year := publication_fin_year)
-
+  mye <- readxl::read_excel(population_mye_path,
+                            "MYE 5",
+                            skip = 4)[1:5]
 
   # For each code in the area_codes constant, find the population and add it to the tibble
-
-  for (i in 1:length(area_codes)){
-
-    for (j in 1:dplyr::count(population_mye_full)[[1]]){
-
-      if (grepl(area_codes[[i]][[1]], population_mye_full[[j,1]], fixed = TRUE)){
-
-        name <- area_codes[[i]][[2]]
-
-        pop <- as.integer(population_mye_full[[j,5]])
-
-        population_mye <- tibble::add_column(population_mye, !!name := pop)
-
-      }
-
-    }
-
-  }
-
-
-  # Add England outside London and England columns
-
-  eol <- "England outside London"
-
-  eol_pop <- population_mye[names(population_mye) %in% trams_in_eol]
-
-  eol_pop_sum <- rowSums(eol_pop[1,])
-
-
-  population_mye <- dplyr::mutate(population_mye,
-                                  !!eol := eol_pop_sum,
-                                  England = eol_pop_sum + London)
-
-  return(population_mye)
+  area_codes %>%
+    dplyr::left_join(mye) %>%
+    dplyr::select(area_name, pop = "Estimated Population mid-2018") %>%
+    #Move to wide form
+    tidyr::pivot_wider(names_from = area_name, values_from = pop) %>%
+    #Create sum columns for England outside London and England total
+    dplyr::mutate("England outside of London" = sum(`Blackpool Tramway`, `Manchester Metrolink`, `Midland Metro`,
+                                                 `Nottingham Express Transit`, `Sheffield Supertram`, `Tyne And Wear Metro`, na.rm = TRUE),
+                  "England" = sum(`England outside of London`, London)) %>%
+    #Move back to long form
+    tidyr::pivot_longer(names_to = "name", values_to = "pop", cols = dplyr::everything())
 
 }
-

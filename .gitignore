@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+inst/doc
+.Rproj.user
+.Rhistory
+.RData
+*.Rproj
+=======
 # History files
 .Rhistory
 .Rapp.history
@@ -49,3 +56,4 @@ Outputs/
 *.ods
 *.html
 .Rproj.user
+>>>>>>> dev-22
